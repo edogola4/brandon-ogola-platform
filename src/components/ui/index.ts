@@ -1,0 +1,13 @@
+/** Barrel exports for UI primitives */
+export { Typography } from './Typography'
+export type { TypographyProps, TypographyVariant } from './Typography'
+export { Button } from './Button'
+export type { ButtonProps, ButtonVariant, ButtonSize } from './Button'
+export { Badge } from './Badge'
+export type { BadgeProps, BadgeVariant } from './Badge'
+export { Tag } from './Tag'
+export type { TagProps } from './Tag'
+export { ExternalLink } from './ExternalLink'
+export type { ExternalLinkProps } from './ExternalLink'
+export { MetricCard } from './MetricCard'
+export type { MetricCardProps, Trend } from './MetricCard'
