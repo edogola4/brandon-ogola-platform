@@ -3,6 +3,7 @@ import MetricsStrip from '../components/marketing/MetricsStrip'
 import TrustMarquee from '../components/marketing/TrustMarquee'
 import ExpertiseGrid from '../components/marketing/ExpertiseGrid'
 import AvailabilityCTA from '../components/marketing/AvailabilityCTA'
+import GitHubActivity from '../components/marketing/GitHubActivity'
 
 export default function Page() {
   return (
@@ -19,7 +20,9 @@ export default function Page() {
 
       {/* TODO: Issue #17 — WritingPreview (requires MDX content) */}
 
-      {/* TODO: Issue #11 — GitHubActivity */}
+      {/* Issue #11 — GitHubActivity */}
+      {/* GitHub activity feed (client-side) */}
+      <GitHubActivity />
 
       <AvailabilityCTA />
     </>

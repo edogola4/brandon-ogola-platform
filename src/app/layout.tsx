@@ -2,6 +2,7 @@ import './globals.css'
 import SkipLink from '../components/layout/SkipLink'
 import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
+import QueryProvider from '../components/providers/QueryProvider'
 
 export const metadata = {
   title: 'Brandon Ogola — Software Engineer',
@@ -16,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SkipLink />
         <Header />
         <main id="main-content" role="main" className="pt-16">
-          {children}
+          <QueryProvider>{children}</QueryProvider>
         </main>
         <Footer />
       </body>
