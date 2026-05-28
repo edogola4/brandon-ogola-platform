@@ -1,7 +1,7 @@
 import React from 'react'
 import { getAllArticles } from '../../lib/mdx'
 import Link from 'next/link'
-import { Tag } from '../../components/ui'
+import { Tag, ExternalLink } from '../../components/ui'
 import { generatePageMetadata } from '../../lib/metadata'
 import { formatDate } from '../../lib/content-utils'
 import { WRITING_PAGE } from '../../content/data/home'
@@ -20,7 +20,15 @@ export default async function WritingPage() {
   return (
     <main className="max-w-5xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold">Writing</h1>
-      <p className="mt-3 text-neutral-600 max-w-2xl">{WRITING_PAGE.intro}</p>
+      <div className="mt-3 flex flex-wrap items-baseline justify-between gap-4">
+        <p className="text-neutral-600 max-w-2xl">{WRITING_PAGE.intro}</p>
+        <ExternalLink
+          href="/writing/feed.xml"
+          className="text-xs text-neutral-400 hover:text-neutral-700 shrink-0"
+        >
+          RSS feed
+        </ExternalLink>
+      </div>
 
       {items.length === 0 ? (
         <p className="mt-8 text-neutral-600">Articles coming soon.</p>

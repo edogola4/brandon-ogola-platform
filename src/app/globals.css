@@ -118,3 +118,15 @@ body {
 /* Prevent mdx-body styles from leaking into custom MDX components */
 .mdx-body .not-prose,
 .mdx-body .not-prose * { all: revert; }
+
+/* rehype-pretty-code — github-light theme token colours */
+.mdx-body code[data-theme],
+.mdx-body pre[data-theme] {
+  background-color: #f6f8fa;
+  color: #24292e;
+}
+.mdx-body [data-highlighted-line] {
+  background-color: #e8f0fe;
+  border-left: 2px solid #4285f4;
+  padding-left: calc(1.25rem - 2px);
+}

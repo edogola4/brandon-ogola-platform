@@ -12,5 +12,5 @@ export const CASE_STUDIES_PAGE = {
 }
 
 export const WRITING_PAGE = {
-  intro: 'Technical writing on backend engineering, AI integrations, cloud infrastructure, and system design.',
+  intro: 'Implementation notes and engineering decisions from production systems — M-Pesa integrations, AI features, database architecture, and cloud infrastructure.',
 }

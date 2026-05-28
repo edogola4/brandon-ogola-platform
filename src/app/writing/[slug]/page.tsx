@@ -1,7 +1,11 @@
 import React from 'react'
-import { getAllArticles, getArticle } from '../../../lib/mdx'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
+import rehypePrettyCode from 'rehype-pretty-code'
+import rehypeSlug from 'rehype-slug'
+import type { Metadata } from 'next'
+import { getAllArticles, getArticle } from '../../../lib/mdx'
 import MDX_COMPONENTS from '../../../lib/mdx-components'
 import { Tag } from '../../../components/ui'
 import { generatePageMetadata } from '../../../lib/metadata'
@@ -9,17 +13,25 @@ import { articleSchema } from '../../../lib/schema'
 import { formatDate } from '../../../lib/content-utils'
 
 type Params = { params: { slug: string } }
+// Derive the rehypePlugins type from MDXRemote's own options prop — no subpath import needed.
+type MDXOptions = NonNullable<React.ComponentProps<typeof MDXRemote>['options']>['mdxOptions']
+type RehypePlugins = NonNullable<NonNullable<MDXOptions>['rehypePlugins']>
+
+const REHYPE_PLUGINS: RehypePlugins = [
+  rehypeSlug,
+  [rehypePrettyCode, { theme: 'github-light', keepBackground: false }],
+]
 
 export async function generateStaticParams() {
   const all = await getAllArticles()
   return all.map((a) => ({ slug: a.slug }))
 }
 
-export async function generateMetadata({ params }: Params) {
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const art = await getArticle(params.slug)
   if (!art) return {}
   const fm = art.frontmatter
-  return generatePageMetadata({
+  const base = generatePageMetadata({
     title: fm.title,
     description: fm.description,
     path: `/writing/${params.slug}`,
@@ -27,6 +39,10 @@ export async function generateMetadata({ params }: Params) {
     publishedTime: fm.date,
     tags: fm.tags ?? [],
   })
+  if (fm.canonical) {
+    return { ...base, alternates: { ...base.alternates, canonical: fm.canonical } }
+  }
+  return base
 }
 
 export default async function ArticlePage({ params }: Params) {
@@ -65,8 +81,27 @@ export default async function ArticlePage({ params }: Params) {
       </div>
 
       <article className="mt-8 mdx-body">
-        <MDXRemote source={art.content} components={MDX_COMPONENTS} />
+        <MDXRemote
+          source={art.content}
+          components={MDX_COMPONENTS}
+          options={{ mdxOptions: { rehypePlugins: REHYPE_PLUGINS } }}
+        />
       </article>
+
+      <nav
+        aria-label="Article navigation"
+        className="mt-12 pt-8 border-t border-neutral-100"
+      >
+        <Link
+          href="/writing"
+          className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors inline-flex items-center gap-1.5"
+        >
+          <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          All articles
+        </Link>
+      </nav>
     </main>
   )
 }
