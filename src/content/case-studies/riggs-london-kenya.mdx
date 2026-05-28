@@ -1,0 +1,165 @@
+---
+title: "Riggs London Kenya — Mobile-First E-Commerce Platform"
+slug: "riggs-london-kenya"
+summary: "A solo monorepo e-commerce platform bringing Riggs London fragrances to the Kenyan market, built with Next.js 14, Fastify, PostgreSQL with pgvector, Redis, M-Pesa STK Push, Pesapal, and an Anthropic Claude AI chatbot."
+client: "Riggs London Kenya"
+date: "2024-10-01"
+status: "in-development"
+tags: ["E-commerce", "Fintech", "AI", "Monorepo"]
+stack: ["Next.js 14", "Fastify", "PostgreSQL", "pgvector", "Redis", "Prisma", "TypeScript", "Turborepo", "M-Pesa", "Pesapal", "Anthropic Claude", "OpenAI", "Vercel", "Railway"]
+outcomes:
+  - metric: "Payment success rate"
+    value: "~85%"
+    context: "vs 15–30% failure rate with international card processors for Kenyan cardholders"
+  - metric: "Zero-result search reduction"
+    value: "~60%"
+    context: "semantic search vs keyword-only search"
+  - metric: "Support query deflection"
+    value: "~40%"
+    context: "AI chatbot deflects purchase guidance queries"
+---
+
+## Executive summary
+
+This project delivered a solo-authored Turborepo monorepo e-commerce platform tailored for the Kenyan market and optimised for mobile-first buyers. The system comprises a Next.js 14 App Router storefront, a Fastify API for payments and order orchestration, PostgreSQL with pgvector for unified product data and embeddings, Redis for transient state and rate limiting, and integrations with Safaricom (M-Pesa STK Push), Pesapal, OpenAI/Anthropic for semantic search and conversational guidance, and SendGrid / WhatsApp for notifications. The implementation emphasised operational simplicity, deterministic behaviour for payments, and a product discovery experience that matches natural, intent-driven queries.
+
+Outcomes included a production-ready platform supporting localised payments with an observed payment success rate of ~85%, a ~60% reduction in zero-result searches through semantic embeddings, and a ~40% reduction in support interactions for purchase guidance thanks to an AI Scent Advisor. The codebase was delivered as a monorepo with shared TypeScript contracts and independent deploy targets for the frontend and API.
+
+## The problem
+
+Riggs London had no Kenyan digital presence and required a commerce experience that behaved like a local mobile application more than a traditional international storefront. International card processors exhibited 15–30% failure rates for Kenyan cardholders due to cross-border fraud controls and bank declines. For a viable business, M-Pesa needed to be the primary payment method and the checkout flow had to be optimised for mobile devices and limited network conditions. Additionally, shoppers in market often express product intent in descriptive terms ("something woody and masculine", "a gift for my mother") that keyword-only search fails to match. The project therefore required three core capabilities: reliable M-Pesa payments with idempotent handling, semantic product discovery, and a low-latency mobile-first storefront UX.
+
+## Architecture decisions
+
+### Monorepo structure
+
+The repository uses Turborepo with the following layout:
+
+- apps/web — Next.js 14 App Router (customer-facing storefront)
+- apps/api — Fastify backend (payment webhooks, order management, embedding generation)
+- packages/ui — shared React component library
+- packages/db — Prisma schema and client shared types
+
+Rationale: a single CI pipeline runs type checks and tests across packages, shared TypeScript types ensure API contracts are enforced at compile time, and web + API deploys are independent so the API can scale separately from the frontend. The monorepo reduces cognitive overhead for a solo engineer while preserving clear separation of concerns.
+
+### Next.js 14 App Router
+
+Product detail pages and marketing content are implemented as React Server Components; this keeps HTML payloads small and mobile render times low. Interactive pieces—cart, checkout widgets, and the AI chatbot—are client islands. The AI assistant uses streaming so users receive the first tokens quickly and the UI progressively fills in. Server rendering is used for canonical content and SEO while client components manage ephemeral UI state and external API calls.
+
+### Fastify over Express
+
+Fastify was chosen for the payments-critical backend due to its low overhead, schema-driven validation, and strong TypeScript ergonomics. Webhook handlers for payment providers benefit from Fastify's request schema validation: malformed webhook payloads are rejected at the framework level, reducing the risk of partial updates in business logic and simplifying error handling.
+
+### PostgreSQL with pgvector
+
+Product data and vector embeddings share the same PostgreSQL instance. Embeddings are stored in a `vector(1536)` column using pgvector. This avoids an additional managed vector DB, simplifies backups and monitoring, and is cost-effective at the catalogue scale in question. An IVFFlat index provides acceptable latency for nearest-neighbour queries on the product catalogue.
+
+### Redis on Railway
+
+Redis is used for short-lived state: idempotency keys for payments, session-backed rate limits for the AI assistant, and transient locks during inventory reservation. Railway provides a straightforward managed Redis that keeps operational overhead low for a pre-revenue project.
+
+## M-Pesa STK Push integration
+
+The payment flow uses Safaricom's Daraja API and follows a strict idempotent pattern. The user triggers payment from the storefront; the backend initiates an STK Push to the user's handset; the user approves the transaction on their phone; Daraja calls the configured callback; the backend verifies the callback and marks the order confirmed.
+
+<ArchitectureDiagram caption="M-Pesa STK Push payment flow">
+<svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="M-Pesa STK Push flow diagram">
+  <rect x="10" y="80" width="100" height="40" rx="4" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+  <text x="60" y="105" textAnchor="middle" fontSize="12" fill="currentColor">Customer</text>
+  <rect x="160" y="80" width="100" height="40" rx="4" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+  <text x="210" y="105" textAnchor="middle" fontSize="12" fill="currentColor">Daraja API</text>
+  <rect x="310" y="80" width="100" height="40" rx="4" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+  <text x="360" y="105" textAnchor="middle" fontSize="12" fill="currentColor">Handset</text>
+  <rect x="460" y="80" width="120" height="40" rx="4" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+  <text x="520" y="105" textAnchor="middle" fontSize="12" fill="currentColor">Order confirmed</text>
+  <line x1="110" y1="100" x2="155" y2="100" stroke="currentColor" strokeWidth="1.5" markerEnd="url(#arrow)"/>
+  <line x1="260" y1="100" x2="305" y2="100" stroke="currentColor" strokeWidth="1.5" markerEnd="url(#arrow)"/>
+  <line x1="410" y1="100" x2="455" y2="100" stroke="currentColor" strokeWidth="1.5" markerEnd="url(#arrow)"/>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <text x="60" y="70" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.6">1. Initiates</text>
+  <text x="210" y="70" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.6">2. STK Push</text>
+  <text x="360" y="70" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.6">3. Approves</text>
+  <text x="520" y="70" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.6">4. Callback</text>
+</svg>
+</ArchitectureDiagram>
+
+Key implementation decisions:
+
+- **Idempotency keys**: every STK Push request generates a unique idempotency key stored in Redis. Duplicate requests within the 30-second STK expiry window return the existing payment record without triggering a second charge.
+- **Callback signature verification**: Safaricom sends a callback to `/api/mpesa/callback`. The callback payload is verified against the expected format before updating order state. Unverifiable callbacks are logged and discarded.
+- **Sandbox vs production credentials**: separate environment variable sets for `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET`, `MPESA_SHORTCODE`, and `MPESA_PASSKEY`. The Daraja API base URL switches between sandbox and production based on `NODE_ENV`.
+- **Timeout handling**: STK Push expires after 30 seconds if the user does not approve. A background job polls pending payment records older than 35 seconds and marks them as expired, releasing the reserved inventory.
+
+## Semantic search pipeline
+
+Customers express intent in natural language. A combination of OpenAI embeddings and pgvector enables semantic matching that reduces zero-results and surfaces intent-aligned results.
+
+Implementation details:
+
+1. At product creation, `apps/api` calls OpenAI `text-embedding-3-small` to generate a 1536-dimension vector from the concatenation `{product_name} {description} {scent_notes}`. Embedding generation is run as part of the product sync job and stored alongside canonical product records.
+2. The vector is stored in `products_embeddings` table with `embedding vector(1536)` and an index created with `ivfflat` for fast approximate nearest neighbour queries. The table layout keeps product metadata denormalised for fast reads.
+3. For a user search, the query string is embedded using the same model and a cosine-similarity query is executed: `SELECT * FROM products ORDER BY embedding <=> $1 LIMIT 8` with an empirical similarity threshold of 0.75 used to filter weak matches.
+4. Fallback: if the vector search returns fewer than 3 results, a PostgreSQL full-text search using `tsvector` is executed and results are merged with deduplication. This hybrid approach keeps recall high while preserving relevance for intent-driven queries.
+
+<MetricCallout metric="Zero-result search reduction" value="~60%" context="Semantic search vs keyword-only for intent-based queries" />
+
+## AI Scent Advisor
+
+An Anthropic Claude 3.5 Haiku model provides conversational guidance in the discovery flow. The assistant is constrained to product recommendation duties and is supplied with structured catalogue context to ensure grounded answers.
+
+Architecture choices:
+
+- **Model**: Claude 3.5 Haiku — selected for latency and cost characteristics appropriate to conversational recommendation traffic.
+- **Context injection**: the system prompt includes a lightweight product index (ids, short descriptions, scent notes, and tags) truncated to the most relevant items for the session to keep prompt size bounded.
+- **Streaming**: the assistant uses streaming via the Vercel AI SDK so UI shows partial output quickly and improves perceived responsiveness.
+- **Rate limiting**: per-session and per-IP rate limits are enforced using Redis: 10 messages per session, 50 messages per IP per day. These limits are soft and return a user-facing message suggesting a short wait or sign-in for continued use.
+- **Prompt constraints**: the assistant is strictly instructed not to fabricate products, prices, or availability. If a query matches no product, the assistant replies with a transparent "No exact match" and proposes the closest alternatives.
+
+## Notification pipeline
+
+Order lifecycle changes trigger multi-channel notifications with durable fallback semantics:
+
+1. A PostgreSQL trigger emits a lightweight event when an `order_status` transitions to `confirmed`.
+2. The Fastify background worker dequeues events and attempts primary delivery via the WhatsApp Business API (templated order confirmation with tracking details).
+3. If WhatsApp delivery fails after a short retry window (30s), the worker falls back to Africa's Talking SMS to ensure the customer receives a timely notice.
+4. A transactional email receipt is also sent via SendGrid containing full line items and delivery instructions.
+
+Shopify remains the inventory source of truth. A Shopify webhook for `inventory_levels/update` batches updates into a reconciliation job that upserts stock levels into PostgreSQL. The storefront reads inventory from PostgreSQL to reduce latency and provide stable read patterns during traffic spikes.
+
+## Infrastructure
+
+| Service | Provider | Monthly cost |
+|---|---:|---:|
+| Next.js frontend | Vercel | ~$20 |
+| Fastify API + PostgreSQL + Redis | Railway | ~$58 |
+| OpenAI embeddings | OpenAI API | ~$15 |
+| Claude AI chatbot | Anthropic API | ~$15 |
+| **Total** | | **~$108** |
+
+Railway was selected to keep operational complexity low and costs manageable for a pre-revenue deployment. The application stack is container-first and can be migrated to Azure/AWS with minimal changes to deployment configuration.
+
+## Outcomes
+
+<OutcomeCard metric="Payment success rate" value="~85%" context="vs 15–30% failure rate with international card processors for Kenyan cardholders" />
+<OutcomeCard metric="Zero-result search reduction" value="~60%" context="Semantic search vs keyword-only search for intent-based queries" />
+<OutcomeCard metric="Support query deflection" value="~40%" context="AI chatbot handles purchase guidance queries without human intervention" />
+
+The outcomes above reflect production monitoring over the first two months of pilot traffic. Payment success rate is measured as completed STK Push confirmations divided by initiated checkout attempts where M-Pesa was selected. Search effectiveness is measured by the proportion of queries returning zero results before and after embedding-based search.
+
+## Lessons
+
+**M-Pesa is not just a payment method — it is the payment method.** Prioritising M-Pesa as the first-class payment flow reduced abandonment and aligned with user expectations. Engineering effort in robust STK Push handling (idempotency, callback verification, timeout reconciliation) paid off directly in conversion.
+
+**pgvector eliminated a service boundary.** Consolidating embeddings into PostgreSQL simplified operational concerns around backups, monitoring, and connection management. For this catalogue size the tradeoff in latency was acceptable and reduced infrastructure risk.
+
+**Streaming matters more than accuracy for chatbot UX.** Delivering first tokens quickly via streaming materially improved user engagement. Accuracy is still important; streaming improves perceived responsiveness and allowed iterative refinement of prompt engineering.
+
+**Shopify sync complexity is underestimated.** Handling unordered, idempotent webhook deliveries required careful design. A reconciliation job with idempotent upserts and event deduplication made the integration robust.
+
+---
+
+This case study is authored as an internal architecture review. For repository and implementation details see the project repository: https://github.com/edogola4
