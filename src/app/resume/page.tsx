@@ -30,8 +30,18 @@ export default function ResumePage() {
     <main className="max-w-5xl mx-auto px-4 py-12 print:w-full print:mx-0">
 
       {/* Page header */}
-      <div className="border-b border-neutral-100 pb-8">
+      <div className="border-b border-neutral-100 pb-8 flex items-center justify-between gap-4">
         <h1 className="text-3xl font-bold text-neutral-900">{PAGE_TITLE}</h1>
+        <a
+          href="/brandon-ogola-resume.pdf"
+          download
+          className="inline-flex items-center gap-2 rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:border-neutral-500 hover:text-neutral-900 transition-colors print:hidden"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M8 2v8M5 7l3 3 3-3M3 13h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Download PDF
+        </a>
       </div>
 
       {/* Summary */}
@@ -43,7 +53,7 @@ export default function ResumePage() {
       </section>
 
       {/* Technical skills */}
-      <section className="mt-10">
+      <section className="mt-10 border-t border-neutral-100 pt-10">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
           {HEADING_TECHNICAL}
         </h2>
@@ -64,7 +74,7 @@ export default function ResumePage() {
       </section>
 
       {/* Experience */}
-      <section className="mt-10">
+      <section className="mt-10 border-t border-neutral-100 pt-10">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
           {HEADING_EXPERIENCE}
         </h2>
@@ -93,7 +103,7 @@ export default function ResumePage() {
       </section>
 
       {/* Education */}
-      <section className="mt-10">
+      <section className="mt-10 border-t border-neutral-100 pt-10">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
           {HEADING_EDUCATION}
         </h2>
@@ -114,7 +124,7 @@ export default function ResumePage() {
       </section>
 
       {/* Projects */}
-      <section className="mt-10">
+      <section className="mt-10 border-t border-neutral-100 pt-10">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
           {HEADING_PROJECTS}
         </h2>
@@ -154,7 +164,7 @@ export default function ResumePage() {
       </section>
 
       {/* Certifications */}
-      <section className="mt-10">
+      <section className="mt-10 border-t border-neutral-100 pt-10">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
           {HEADING_CERTIFICATIONS}
         </h2>

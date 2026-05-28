@@ -22,7 +22,7 @@ export const SKILLS: SkillGroup[] = [
   {
     category: 'Frontend',
     items: [
-      'Next.js 14 (App Router)',
+      'Next.js 16 (App Router)',
       'React.js',
       'Angular',
       'Blazor (Server & WebAssembly)',
@@ -30,6 +30,7 @@ export const SKILLS: SkillGroup[] = [
       'Zustand',
       'Redux Toolkit',
       'Framer Motion',
+      'Turborepo',
       'HTML5',
       'CSS3',
     ],
@@ -62,7 +63,6 @@ export const SKILLS: SkillGroup[] = [
       'WhatsApp Business API',
       "Africa's Talking SMS",
       'SendGrid',
-      'Turborepo',
     ],
   },
   { category: 'Testing & Quality', items: ['TDD', 'xUnit', 'Jest', 'pytest', 'SonarQube', 'Unit & Integration Testing'] },
