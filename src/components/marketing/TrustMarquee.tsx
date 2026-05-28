@@ -22,37 +22,33 @@ const ITEMS = [
   'SendGrid',
   'GitHub Actions',
   'Vercel',
-  'Railway'
+  'Railway',
 ]
 
 /**
- * Server component: pure CSS marquee that duplicates the item list for a seamless loop.
+ * Server component: pure CSS marquee, no JS.
+ * Both groups are aria-hidden — content is decorative.
+ * The outer div carries the accessible label for screen readers.
  */
 export default function TrustMarquee(): React.ReactElement {
   return (
-    <div role="marquee" aria-label="Technologies and integrations Brandon has worked with" className="w-full overflow-hidden">
-      <div className="marquee-track flex items-center" aria-hidden={false}>
-        <div className="marquee-group flex items-center whitespace-nowrap">
-          {ITEMS.map((it, idx) => (
-            <span key={it + idx} className="inline-flex items-center">
-              <span className="font-mono text-xs uppercase tracking-widest text-neutral-500">{it}</span>
-              {idx !== ITEMS.length - 1 && (
-                <span aria-hidden="true" className="mx-3 opacity-50 text-neutral-400">·</span>
-              )}
-            </span>
-          ))}
-        </div>
-
-        <div aria-hidden="true" className="marquee-group flex items-center whitespace-nowrap">
-          {ITEMS.map((it, idx) => (
-            <span key={it + '-copy-' + idx} className="inline-flex items-center">
-              <span className="font-mono text-xs uppercase tracking-widest text-neutral-500">{it}</span>
-              {idx !== ITEMS.length - 1 && (
-                <span aria-hidden="true" className="mx-3 opacity-50 text-neutral-400">·</span>
-              )}
-            </span>
-          ))}
-        </div>
+    <div
+      aria-label="Technologies and integrations Brandon has worked with"
+      className="w-full overflow-hidden border-b border-neutral-100 py-6 marquee-container"
+    >
+      <div className="marquee-track" aria-hidden="true">
+        {[0, 1].map((copy) => (
+          <div key={copy} className="marquee-group">
+            {ITEMS.map((it) => (
+              <span key={it} className="inline-flex items-center">
+                <span className="font-mono text-xs uppercase tracking-widest text-neutral-400">
+                  {it}
+                </span>
+                <span className="mx-4 text-neutral-300" aria-hidden="true">·</span>
+              </span>
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   )

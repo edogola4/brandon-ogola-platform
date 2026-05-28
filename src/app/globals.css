@@ -38,11 +38,34 @@ body {
 }
 
 /* Marquee animation for TrustMarquee component */
+.marquee-container {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+}
+
 .marquee-track {
   display: flex;
-  gap: 1rem;
   align-items: center;
   animation: marquee 40s linear infinite;
+}
+
+.marquee-group {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 @keyframes marquee {
