@@ -138,7 +138,7 @@ export default function ContactForm() {
             name="projectType"
             value={form.projectType}
             onChange={(e) => handleChange('projectType', e.target.value as ContactFormData['projectType'])}
-            className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+            className="w-full appearance-none rounded-md border border-neutral-300 bg-white px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
           >
             {PROJECT_TYPES.map((opt) => (
               <option key={opt} value={opt}>{opt}</option>
@@ -178,7 +178,7 @@ export default function ContactForm() {
             name="budgetRange"
             value={form.budgetRange ?? ''}
             onChange={(e) => handleChange('budgetRange', e.target.value ? (e.target.value as ContactFormData['budgetRange']) : undefined)}
-            className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+            className="w-full appearance-none rounded-md border border-neutral-300 bg-white px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
           >
             <option value="">Select</option>
             {BUDGET_RANGES.map((opt) => (
@@ -204,7 +204,7 @@ export default function ContactForm() {
             name="timeline"
             value={form.timeline ?? ''}
             onChange={(e) => handleChange('timeline', e.target.value ? (e.target.value as ContactFormData['timeline']) : undefined)}
-            className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+            className="w-full appearance-none rounded-md border border-neutral-300 bg-white px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
           >
             <option value="">Select</option>
             {TIMELINES.map((opt) => (
