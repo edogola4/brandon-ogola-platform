@@ -1,0 +1,112 @@
+---
+title: "Alliance Bioversity CIAT — Internal Operations Automation"
+slug: "alliance-bioversity-ciat"
+summary: "A 6-month engineering engagement at a CGIAR research centre building internal automation tooling — Python/Flask RESTful APIs, PostgreSQL integration, and web applications adopted by a cross-functional team of 12. Delivered 20% processing time reduction and 40% elimination of manual tasks."
+client: "Alliance Bioversity International and CIAT"
+date: "2025-04-01"
+status: "live"
+tags: ["Enterprise", "Automation", "Python", "REST APIs", "Research"]
+stack: ["Python", "Flask", "PostgreSQL", "REST APIs", "OpenAPI"]
+outcomes:
+  - metric: "Operational processing time reduction"
+    value: "20%"
+    context: "automated data workflows replacing manual processes"
+  - metric: "Manual tasks eliminated"
+    value: "40%"
+    context: "recurring manual tasks automated through web applications"
+  - metric: "Team adoption"
+    value: "12"
+    context: "cross-functional team members adopted the internal web applications"
+---
+
+## Executive summary
+
+Alliance Bioversity International and CIAT is a CGIAR research centre focused on agricultural biodiversity and tropical agriculture. This engagement was a six-month operations internship concentrated on designing and delivering internal automation tooling to replace recurring manual processes and improve operational throughput.
+
+The delivered solution comprised Python/Flask RESTful APIs, PostgreSQL-backed data pipelines, and internal web applications that are now used daily by a cross-functional team of 12. The engagement produced measurable operational improvements: a 20% reduction in processing time for routine workflows and a 40% reduction in recurring manual tasks through automation.
+
+## The organisation
+
+Alliance Bioversity International and CIAT is part of CGIAR, a global research partnership addressing food and nutrition security. The Nairobi office supports research operations across East Africa including field data collection, reporting, procurement, and partner coordination. Operational workflows had accumulated organically over years and were predominantly manual—spreadsheets, email threads, and institutional knowledge retained by individual staff.
+
+## The problem
+
+Four specific problems drove the engagement:
+
+**Manual data workflows**: research staff spent significant time aggregating and normalising data from multiple sources. These tasks recurred weekly or monthly and consumed valuable staff hours that could be redirected to analysis and field support.
+
+**No internal web tooling**: cross-functional operational tasks lacked a dedicated digital interface. Requests, approvals, and status tracking were managed via email and messaging apps, resulting in fragmented records and no single source of truth.
+
+**Slow reporting cycles**: report generation required manual data collection and consolidation from multiple contributors. What should have been a matter of minutes required days, delaying research outputs and operational decisions.
+
+**No API documentation**: internal APIs and data contracts were undocumented. Process knowledge was held by individuals, increasing risk during staff transitions and making onboarding slow.
+
+## Solution
+
+### Python/Flask RESTful APIs
+
+A suite of RESTful APIs was designed and implemented using Python and Flask to automate recurring operational workflows. Each endpoint corresponded to a specific manual task—data ingestion from field sources, report generation, and status aggregation.
+
+Flask application structure:
+- Factory pattern for application creation using `create_app()` and environment-based configuration
+- Blueprints to separate logical areas: `data`, `reports`, and `operations`
+- Request validation at the blueprint level prior to business logic execution
+- Consistent error response shape across endpoints
+
+Key design decision: APIs were intended for both internal web applications and ad-hoc use by technical staff (Postman, curl). The response formats favoured clear human-readable field names, predictable pagination, and informative error messages to accommodate this dual audience.
+
+### PostgreSQL integration
+
+The APIs persisted and validated data through a PostgreSQL database. Notable implementation details:
+
+- Data validation pipeline: incoming records were validated against schema rules before insertion (type checks, range validation, referential integrity). Malformed records were inserted into a `rejected_records` table with rejection reasons for later inspection.
+- Query optimisation: several report queries initially taking 8–12s were optimised—indexes added, N+1 patterns removed, and subqueries rewritten as joins—reducing runtime to under 500ms for typical dataset sizes.
+- Migration management: schema changes were managed via versioned migration scripts in the repository; no manual schema changes were applied directly to production.
+
+### Internal web applications
+
+Web applications were built for the operational workflows most frequently used by staff. The UX goal was low friction for non-technical users; adoption depended on a small set of pragmatic decisions:
+
+- Forms over tables: data entry surfaces used forms with validation feedback rather than spreadsheet-like interfaces
+- Status visibility: operational items display current state and last editor for auditability
+- Authentication: internal tools integrated with organisation SSO to avoid login friction for staff
+
+Applications were deployed on the organisation's internal servers with access restricted to authorised staff; no external cloud dependencies were required for the deployment.
+
+### API documentation
+
+A complete OpenAPI specification documented every endpoint: request and response shapes, error codes, and example payloads. This spec served as the team's canonical reference and significantly reduced onboarding time for new staff.
+
+## Technical implementation details
+
+**Flask factory pattern**: `create_app()` accepted a configuration object making the application easily testable. Test suites instantiated the app with a test configuration pointing at a transient test database.
+
+**Data validation pipeline**: validation rules were defined as Python dataclasses with field constraints. The same validation code was used in the API and in standalone scripts for bulk imports to enforce a single source of truth for validation rules.
+
+**PostgreSQL connection management**: connection pooling via `psycopg2` was configured with pool sizes aligned to expected concurrency. Health checks on pool checkout reduced stale connection failures.
+
+**Error handling**: API errors consistently returned JSON objects in the shape `{ "error": string, "code": string, "details": object | null }`, which simplified client-side handling across the web applications.
+
+## Outcomes
+
+The following outcomes are measured results from the engagement.
+
+<OutcomeCard metric="Operational processing time reduction" value="20%" context="automated data workflows replacing manual processes" />
+<OutcomeCard metric="Manual tasks eliminated" value="40%" context="recurring manual tasks automated through web applications" />
+<OutcomeCard metric="Team adoption" value="12" context="cross-functional team members adopted the internal web applications" />
+
+API documentation became the primary technical reference and materially reduced onboarding time for new staff.
+
+## Lessons
+
+**Documentation is a first-class deliverable in research organisations.** Working code without documentation does not survive staff turnover. The OpenAPI spec outlived the engagement and became the team's primary means of understanding the operational data model.
+
+**Validation at ingestion is worth the upfront cost.** Rejecting malformed data at the API boundary prevented data quality issues from contaminating downstream reports.
+
+**Non-technical adoption requires UX investment.** The APIs were functional immediately, but the web applications reached consistent use only after iterative UX refinements driven by staff feedback.
+
+**Institutional processes are harder to change than codebases.** Some automation changes required extended stakeholder alignment. Delivering technical solutions was only half the work; organisational adoption took time.
+
+---
+
+For implementation details and repository references see: https://github.com/edogola4
