@@ -63,7 +63,7 @@ Redis is used for short-lived state: idempotency keys for payments, session-back
 The payment flow uses Safaricom's Daraja API and follows a strict idempotent pattern. The user triggers payment from the storefront; the backend initiates an STK Push to the user's handset; the user approves the transaction on their phone; Daraja calls the configured callback; the backend verifies the callback and marks the order confirmed.
 
 <ArchitectureDiagram caption="M-Pesa STK Push payment flow">
-<svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="M-Pesa STK Push flow diagram">
+<svg viewBox="0 0 600 200" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="M-Pesa STK Push flow diagram">
   <rect x="10" y="80" width="100" height="40" rx="4" fill="none" stroke="currentColor" strokeWidth="1.5"/>
   <text x="60" y="105" textAnchor="middle" fontSize="12" fill="currentColor">Customer</text>
   <rect x="160" y="80" width="100" height="40" rx="4" fill="none" stroke="currentColor" strokeWidth="1.5"/>

@@ -47,7 +47,7 @@ Infrastructure choices reflect an emphasis on managed services and operational s
 
 ### Inline architecture diagram
 
-<svg viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SmartSchedule architecture diagram">
+<svg viewBox="0 0 900 360" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SmartSchedule architecture diagram">
   <!-- Clients -->
   <rect x="20" y="20" width="200" height="80" rx="6" fill="none" stroke="currentColor" strokeWidth="1.2" />
   <text x="120" y="50" textAnchor="middle" fontSize="12" fill="currentColor">Patient & Staff Clients</text>
@@ -163,6 +163,8 @@ The following target outcomes are projections based on comparable interventions 
 <OutcomeCard metric="Target no-show reduction" value="40%" context="Projected based on comparable scheduling intervention studies in similar healthcare markets" />
 
 <OutcomeCard metric="Target admin efficiency gain" value="50%" context="Reduction in manual scheduling and follow-up overhead for clinic staff" />
+
+<OutcomeCard metric="Environments provisioned" value="3" context="dev, staging, and production — fully reproducible via Terraform" />
 
 ## Operational lessons learned
 
