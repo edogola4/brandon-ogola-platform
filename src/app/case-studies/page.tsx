@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Tag, Badge } from '../../components/ui'
 import { generatePageMetadata } from '../../lib/metadata'
 import { formatDate, formatStatus } from '../../lib/content-utils'
+import { CASE_STUDIES_PAGE } from '../../content/data/home'
 
 export function generateMetadata() {
   return generatePageMetadata({
@@ -20,7 +21,7 @@ export default async function CaseStudiesPage() {
     <main className="max-w-5xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold">Case Studies</h1>
       <p className="mt-3 text-neutral-600 max-w-2xl">
-        Production engineering work across fintech, healthcare, and enterprise SaaS — covering architecture decisions, implementation details, and measured outcomes.
+        {CASE_STUDIES_PAGE.intro}
       </p>
 
       {items.length === 0 ? (

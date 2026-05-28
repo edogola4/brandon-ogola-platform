@@ -2,9 +2,9 @@ import React from 'react'
 import { getAllArticles } from '../../lib/mdx'
 import Link from 'next/link'
 import { Tag } from '../../components/ui'
-import { ArticleFrontmatter } from '../../types/content'
-
 import { generatePageMetadata } from '../../lib/metadata'
+import { formatDate } from '../../lib/content-utils'
+import { WRITING_PAGE } from '../../content/data/home'
 
 export function generateMetadata() {
   return generatePageMetadata({
@@ -16,19 +16,37 @@ export function generateMetadata() {
 
 export default async function WritingPage() {
   const items = await getAllArticles()
+
   return (
     <main className="max-w-5xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold">Writing</h1>
+      <p className="mt-3 text-neutral-600 max-w-2xl">{WRITING_PAGE.intro}</p>
+
       {items.length === 0 ? (
-        <p className="mt-4 text-gray-700">Articles coming soon.</p>
+        <p className="mt-8 text-neutral-600">Articles coming soon.</p>
       ) : (
-        <div className="mt-6 space-y-6">
-          {items.map((a: ArticleFrontmatter) => (
-            <article key={a.slug} className="border rounded p-4">
-              <h2 className="text-xl font-semibold"><Link href={`/writing/${a.slug}`}>{a.title}</Link></h2>
-              <p className="mt-1 text-sm text-gray-600">{a.description}</p>
-              <div className="mt-2 text-sm text-gray-500">{a.date}</div>
-              <div className="mt-2 flex gap-2">{a.tags.map((t) => <Tag key={t} label={t} />)}</div>
+        <div className="mt-8 space-y-4">
+          {items.map((a) => (
+            <article
+              key={a.slug}
+              className="border border-neutral-200 rounded-lg p-5 hover:border-neutral-400 transition-colors"
+            >
+              <h2 className="text-lg font-semibold leading-snug">
+                <Link href={`/writing/${a.slug}`} className="hover:underline">{a.title}</Link>
+              </h2>
+              <p className="mt-1.5 text-sm text-neutral-600 line-clamp-2">{a.description}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <span className="text-xs text-neutral-400">{formatDate(a.date)}</span>
+                {a.readingTime && (
+                  <>
+                    <span className="text-xs text-neutral-300" aria-hidden="true">·</span>
+                    <span className="text-xs text-neutral-400">{a.readingTime} min read</span>
+                  </>
+                )}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {a.tags.map((t) => <Tag key={t} label={t} />)}
+              </div>
             </article>
           ))}
         </div>

@@ -74,7 +74,7 @@ export default async function CaseStudyPage({ params }: Params) {
       </div>
 
       {/* Body */}
-      <article className="mt-8 prose prose-neutral max-w-none">
+      <article className="mt-8 mdx-body">
         <MDXRemote source={cs.content} components={MDX_COMPONENTS} />
       </article>
     </main>
