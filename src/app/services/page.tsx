@@ -16,9 +16,7 @@ import {
   SEE_THE_WORK_LABEL,
   HEADING_GET_IN_TOUCH,
   CONTACT_BODY,
-  CONTACT_CTA_LABEL,
-  CONTACT_CTA_HREF,
-  CONTACT_EMAIL_LABEL,
+  CONTACT_RESPONSE_NOTE,
   CONTACT_EMAIL,
   CONTACT_LINKEDIN_TEXT,
   CONTACT_LINKEDIN_URL,
@@ -95,26 +93,17 @@ export default function ServicesPage() {
         <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
           {HEADING_GET_IN_TOUCH}
         </h2>
-        <p className="mt-4 text-neutral-600 leading-relaxed max-w-xl">{CONTACT_BODY}</p>
-        <div className="mt-6">
-          <Button asChild variant="primary" size="md">
-            <Link href={CONTACT_CTA_HREF}>{CONTACT_CTA_LABEL}</Link>
-          </Button>
-        </div>
-        <div className="mt-6 pt-6 border-t border-neutral-100 flex flex-col gap-3">
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-neutral-400">{CONTACT_EMAIL_LABEL}</span>
-            <a
-              href={`mailto:${CONTACT_EMAIL}`}
-              className="text-sm text-neutral-700 underline hover:text-neutral-900 transition-colors"
-            >
-              {CONTACT_EMAIL}
-            </a>
-          </div>
-          <ExternalLink href={CONTACT_LINKEDIN_URL} className="text-sm text-neutral-500">
+        <p className="mt-4 text-neutral-600 leading-relaxed">{CONTACT_BODY}</p>
+        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <ExternalLink href={`mailto:${CONTACT_EMAIL}`} className="text-sm font-medium text-neutral-700 hover:text-neutral-900">
+            {CONTACT_EMAIL}
+          </ExternalLink>
+          <span className="text-neutral-300 select-none" aria-hidden="true">·</span>
+          <ExternalLink href={CONTACT_LINKEDIN_URL} className="text-sm font-medium text-neutral-700 hover:text-neutral-900">
             {CONTACT_LINKEDIN_TEXT}
           </ExternalLink>
         </div>
+        <p className="mt-4 text-xs text-neutral-400">{CONTACT_RESPONSE_NOTE}</p>
       </section>
 
     </main>
