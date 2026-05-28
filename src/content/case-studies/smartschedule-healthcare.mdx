@@ -1,19 +1,22 @@
 ---
-title: "SmartSchedule Healthcare — Scheduling & Notifications for Clinics"
-slug: "smart-schedule-healthcare"
-summary: "Design and implementation notes for SmartSchedule: a scheduling and notification platform targeting clinics with strict PHI handling requirements. Focus: reliable appointment management, no-show reduction, and secure telemetry." 
-client: "SmartSchedule Pilot"
-date: "2026-05-28"
+title: "SmartSchedule Healthcare — Enterprise AI-Powered Scheduling SaaS"
+slug: "smartschedule-healthcare"
+summary: "An enterprise SaaS platform targeting 40% reduction in healthcare appointment no-shows and 50% administrative efficiency gains for East African healthcare providers. Built on .NET 10, Azure, and microservices with CQRS/Event Sourcing. MVP in active development."
+client: "SmartSchedule Healthcare"
+date: "2026-01-01"
 status: "in-development"
-tags: ["Healthcare", "Scheduling", "HIPAA", "Notifications"]
-stack: ["Azure", "Azure SQL", "Azure Storage", "Terraform", "Blazor WebAssembly", "FastAPI", "Redis", "PostgreSQL", "TypeScript", "Docker"]
+tags: ["Healthcare", "SaaS", "Enterprise", "Azure", "Microservices"]
+stack: [".NET 10", "C#", "ASP.NET Core", "Blazor WebAssembly", "Azure App Services", "Azure Service Bus", "Azure SQL Database", "Azure Redis Cache", "Azure Key Vault", "Docker", "Kubernetes", "Terraform", "Azure DevOps", "SonarQube"]
 outcomes:
   - metric: "Target no-show reduction"
     value: "40%"
-    context: "Projected based on comparable scheduling intervention studies in similar healthcare markets"
+    context: "projected based on comparable scheduling intervention studies"
   - metric: "Target admin efficiency gain"
     value: "50%"
-    context: "Reduction in manual scheduling and follow-up overhead for clinic staff"
+    context: "reduction in manual scheduling overhead for clinic staff"
+  - metric: "Environments provisioned"
+    value: "3"
+    context: "dev, staging, and production — fully reproducible via Terraform"
 ---
 
 ## Status

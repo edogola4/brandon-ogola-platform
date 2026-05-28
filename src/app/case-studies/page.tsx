@@ -34,8 +34,8 @@ export default async function CaseStudiesPage() {
                     {c.tags.map((t) => <Tag key={t} label={t} />)}
                   </div>
                 </div>
-                <div className="ml-4">
-                  <Badge>{c.status}</Badge>
+                <div className="ml-4 shrink-0">
+                  <Badge className="whitespace-nowrap">{c.status}</Badge>
                 </div>
               </div>
             </article>
