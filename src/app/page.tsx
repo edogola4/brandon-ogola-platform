@@ -1,3 +1,4 @@
+import React from 'react'
 import Hero from '../components/marketing/Hero'
 import MetricsStrip from '../components/marketing/MetricsStrip'
 import TrustMarquee from '../components/marketing/TrustMarquee'
@@ -23,6 +24,12 @@ export default function Page() {
       {/* Issue #11 — GitHubActivity */}
       {/* GitHub activity feed (client-side) */}
       <GitHubActivity />
+
+      {/* Issue #18 — AI assistant */}
+      {/* AIAssistant provides a client-side chat interface to the Claude-based assistant */}
+      <React.Suspense fallback={null}>
+        {React.createElement(require('../components/marketing/AIAssistant').default)}
+      </React.Suspense>
 
       <AvailabilityCTA />
     </>
