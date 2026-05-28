@@ -19,6 +19,8 @@ export function generatePageMetadata({
 }: PageMetadataInput): Metadata {
   const url = `https://brandonogola.dev${path}`
   const fullTitle = path === '/' ? title : `${title} — Brandon Ogola`
+  const ogImageType = ogType === 'article' ? (path.startsWith('/writing') ? 'article' : 'case-study') : 'page'
+  const ogImage = `https://brandonogola.dev/og?title=${encodeURIComponent(fullTitle)}&description=${encodeURIComponent(description)}&type=${ogImageType}`
 
   return {
     title: fullTitle,
@@ -31,6 +33,7 @@ export function generatePageMetadata({
       url,
       siteName: 'Brandon Ogola',
       type: ogType,
+      images: [{ url: ogImage, width: 1200, height: 630, alt: fullTitle }],
       ...(publishedTime && { publishedTime }),
       ...(tags && { tags }),
     },
@@ -38,6 +41,7 @@ export function generatePageMetadata({
       card: 'summary_large_image',
       title: fullTitle,
       description,
+      images: [ogImage],
     },
   }
 }

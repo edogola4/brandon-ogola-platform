@@ -3,15 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-
-const NAV_LINKS: Array<{ label: string; href: string }> = [
-  { label: 'Home', href: '/' },
-  { label: 'Case Studies', href: '/case-studies' },
-  { label: 'Services', href: '/services' },
-  { label: 'Writing', href: '/writing' },
-  { label: 'Resume', href: '/resume' },
-  { label: 'Contact', href: '/contact' },
-]
+import { NAV_LINKS } from '../../content/data/navigation'
 
 export default function HeaderClient() {
   const pathname = usePathname()

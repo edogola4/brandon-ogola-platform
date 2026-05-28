@@ -1,12 +1,8 @@
-'use client'
-
 import Link from 'next/link'
 import { Button } from '../ui'
 import { HERO } from '../../content/data/home'
+import HeroAnchorCta from './HeroAnchorCta'
 
-/**
- * Hero section — server component. All copy sourced from src/content/data/home.ts.
- */
 export default function Hero() {
   return (
     <section
@@ -33,18 +29,7 @@ export default function Hero() {
         </div>
 
         <div className="mt-5">
-          <button
-            type="button"
-            onClick={() => {
-              document.getElementById('ai-heading')?.scrollIntoView({ behavior: 'smooth' })
-            }}
-            className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
-          >
-            {HERO.anchorCta.label}
-            <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M7 2v10M3 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
+          <HeroAnchorCta />
         </div>
       </div>
     </section>

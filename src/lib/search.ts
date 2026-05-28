@@ -11,7 +11,8 @@ export interface SearchResult {
 }
 
 const databaseUrl = process.env.DATABASE_URL
-const pool = databaseUrl ? new Pool({ connectionString: databaseUrl }) : null
+// max:1 prevents connection exhaustion on Vercel serverless — each invocation gets one connection
+const pool = databaseUrl ? new Pool({ connectionString: databaseUrl, max: 1, idleTimeoutMillis: 10_000 }) : null
 
 export async function semanticSearch(query: string): Promise<SearchResult[]> {
   if (!query || query.length === 0) return []
