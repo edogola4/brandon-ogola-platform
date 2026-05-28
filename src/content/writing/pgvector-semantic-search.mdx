@@ -1,0 +1,180 @@
+---
+title: "Semantic Product Search with pgvector and OpenAI Embeddings"
+slug: "pgvector-semantic-search"
+description: "How to implement semantic search in PostgreSQL using the pgvector extension and OpenAI embeddings — covering schema design, embedding generation, cosine similarity queries, IVFFlat vs HNSW indexing, and fallback strategies."
+date: "2025-10-15"
+tags: ["PostgreSQL", "pgvector", "OpenAI", "Semantic Search", "TypeScript"]
+---
+
+A user searches "something woody and masculine for a gift". A keyword search returns nothing — no product has those exact words in its name. Semantic search understands the intent and returns relevant results. This article covers a complete implementation using PostgreSQL's pgvector extension and OpenAI's embedding API.
+
+## When to use semantic search
+
+Semantic search is the right tool when:
+- Users search by intent or description rather than exact product names
+- Your content has rich descriptive text (fragrance notes, product descriptions, article summaries)
+- Zero-result searches are a problem worth solving
+
+Keyword search is still better when:
+- Users know exactly what they want ("iPhone 15 Pro 256GB")
+- Your dataset is small enough that exact matching works
+- You need deterministic, auditable search results
+
+Use both — semantic search as primary with keyword fallback when vector similarity is below threshold.
+
+## PostgreSQL setup
+
+Enable the pgvector extension:
+```sql
+CREATE EXTENSION IF NOT EXISTS vector;
+```
+
+## Schema design
+
+```sql
+CREATE TABLE products_embeddings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,        -- the text that was embedded
+  embedding vector(1536),       -- OpenAI text-embedding-3-small dimension
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+Store the original content alongside the vector — you will need it to debug why certain results are returned.
+
+## Generating embeddings
+
+```typescript
+// src/lib/embeddings.ts
+import OpenAI from 'openai'
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
+export async function generateEmbedding(text: string): Promise<number[]> {
+  const response = await openai.embeddings.create({
+    model: 'text-embedding-3-small',
+    input: text.replace(/\n/g, ' '), // embeddings work better without newlines
+  })
+
+  const embedding = response.data[0]?.embedding
+  if (!embedding) throw new Error('No embedding returned')
+
+  return embedding
+}
+
+export async function indexProduct(productId: string, product: {
+  name: string
+  description: string
+  scentNotes: string[]
+}): Promise<void> {
+  // Combine fields into a single string for embedding
+  const content = [
+    product.name,
+    product.description,
+    product.scentNotes.join(', ')
+  ].join('. ')
+
+  const embedding = await generateEmbedding(content)
+
+  await db.execute(sql`
+    INSERT INTO products_embeddings (product_id, content, embedding)
+    VALUES (${productId}, ${content}, ${JSON.stringify(embedding)}::vector)
+    ON CONFLICT (product_id) DO UPDATE
+      SET content = EXCLUDED.content,
+          embedding = EXCLUDED.embedding
+  `)
+}
+```
+
+## Cosine similarity search
+
+```typescript
+// src/lib/search.ts
+export async function semanticSearch(
+  query: string,
+  limit = 8,
+  threshold = 0.75
+): Promise<SearchResult[]> {
+  const queryEmbedding = await generateEmbedding(query)
+
+  const results = await db.execute<SearchResult>(sql`
+    SELECT
+      p.id,
+      p.name,
+      p.description,
+      1 - (pe.embedding <=> ${JSON.stringify(queryEmbedding)}::vector) AS similarity
+    FROM products_embeddings pe
+    JOIN products p ON p.id = pe.product_id
+    WHERE 1 - (pe.embedding <=> ${JSON.stringify(queryEmbedding)}::vector) > ${threshold}
+    ORDER BY pe.embedding <=> ${JSON.stringify(queryEmbedding)}::vector
+    LIMIT ${limit}
+  `)
+
+  return results.rows
+}
+```
+
+The `<=>` operator is cosine distance — lower is more similar. `1 - distance` converts to cosine similarity — higher is more similar. The threshold of 0.75 filters out weak matches.
+
+## Indexing strategy
+
+Without an index, pgvector performs exact nearest-neighbour search — accurate but slow at scale. Two index types are available:
+
+**IVFFlat** (Inverted File with Flat quantisation):
+```sql
+CREATE INDEX ON products_embeddings
+USING ivfflat (embedding vector_cosine_ops)
+WITH (lists = 100);
+```
+- `lists` is the number of clusters. Rule of thumb: `sqrt(number_of_rows)` for up to 1M rows.
+- Requires at least `lists * 30` rows to be effective — do not create the index on an empty table.
+- Faster to build, slightly less accurate than HNSW.
+- Good for datasets under 1M vectors.
+
+**HNSW** (Hierarchical Navigable Small World):
+```sql
+CREATE INDEX ON products_embeddings
+USING hnsw (embedding vector_cosine_ops)
+WITH (m = 16, ef_construction = 64);
+```
+- Better recall (accuracy) than IVFFlat at the cost of more memory and slower index build time.
+- `m` controls the number of connections per node — higher means better recall, more memory.
+- Better for production datasets where recall matters more than index build time.
+
+For a product catalogue under 100k items, IVFFlat is sufficient. For a large content corpus where search quality is critical, use HNSW.
+
+## Fallback strategy
+
+When vector search returns fewer than 3 results, fall back to PostgreSQL full-text search:
+
+```typescript
+export async function searchWithFallback(query: string): Promise<SearchResult[]> {
+  const vectorResults = await semanticSearch(query, 8, 0.75)
+
+  if (vectorResults.length >= 3) return vectorResults
+
+  // Fall back to full-text search
+  const ftsResults = await db.execute<SearchResult>(sql`
+    SELECT id, name, description, ts_rank(search_vector, query) AS similarity
+    FROM products, plainto_tsquery('english', ${query}) query
+    WHERE search_vector @@ query
+    ORDER BY similarity DESC
+    LIMIT 8
+  `)
+
+  // Merge, deduplicate by id, vector results take priority
+  const merged = [...vectorResults]
+  for (const result of ftsResults.rows) {
+    if (!merged.find(r => r.id === result.id)) {
+      merged.push(result)
+    }
+  }
+
+  return merged.slice(0, 8)
+}
+```
+
+## Cost considerations
+
+OpenAI `text-embedding-3-small` costs $0.02 per 1M tokens. A typical product description is ~100 tokens. Embedding a catalogue of 10,000 products costs ~$0.02. Re-embedding on product updates is negligible. The search query embedding (~10 tokens per query) costs fractions of a cent at any realistic query volume.

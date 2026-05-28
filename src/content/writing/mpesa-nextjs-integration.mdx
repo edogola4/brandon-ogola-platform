@@ -1,0 +1,239 @@
+---
+title: "Integrating M-Pesa STK Push with a Next.js API Route"
+slug: "mpesa-nextjs-integration"
+description: "A complete guide to integrating Safaricom's M-Pesa STK Push using the Daraja API in a Next.js 14 App Router project — covering authentication, STK Push request, callback handling, idempotency, and error states."
+date: "2025-10-01"
+tags: ["M-Pesa", "Next.js", "TypeScript", "Payments", "Fintech"]
+---
+
+Safaricom's Daraja API is the gateway to M-Pesa programmatic access. For Kenyan e-commerce, it is not optional — international card processors have 15–30% failure rates for Kenyan cardholders. STK Push is the mechanism that sends a payment prompt directly to the customer's handset. This article covers a complete, production-ready implementation in a Next.js 14 App Router project.
+
+## Prerequisites
+
+- A Safaricom Daraja account (register at developer.safaricom.co.ke)
+- A Next.js 14+ project with TypeScript
+- A publicly accessible callback URL (use ngrok for local development)
+
+## Environment setup
+
+Show the required environment variables:
+
+```typescript
+// .env.local
+MPESA_CONSUMER_KEY=your_consumer_key
+MPESA_CONSUMER_SECRET=your_consumer_secret
+MPESA_SHORTCODE=your_business_shortcode
+MPESA_PASSKEY=your_lipa_na_mpesa_passkey
+MPESA_CALLBACK_URL=https://yourdomain.com/api/mpesa/callback
+MPESA_ENVIRONMENT=sandbox // or 'production'
+```
+
+## TypeScript types
+
+Define the complete TypeScript interfaces for Daraja API request and response shapes:
+
+```typescript
+interface STKPushRequest {
+  BusinessShortCode: string
+  Password: string
+  Timestamp: string
+  TransactionType: 'CustomerPayBillOnline' | 'CustomerBuyGoodsOnline'
+  Amount: number
+  PartyA: string  // customer phone number
+  PartyB: string  // business shortcode
+  PhoneNumber: string
+  CallBackURL: string
+  AccountReference: string
+  TransactionDesc: string
+}
+
+interface STKPushResponse {
+  MerchantRequestID: string
+  CheckoutRequestID: string
+  ResponseCode: string
+  ResponseDescription: string
+  CustomerMessage: string
+}
+
+interface MPesaCallback {
+  Body: {
+    stkCallback: {
+      MerchantRequestID: string
+      CheckoutRequestID: string
+      ResultCode: number  // 0 = success, 1032 = cancelled, 1037 = timeout
+      ResultDesc: string
+      CallbackMetadata?: {
+        Item: Array<{ Name: string; Value?: string | number }>
+      }
+    }
+  }
+}
+```
+
+## Authentication
+
+Daraja uses OAuth2. Generate a token before every STK Push request — tokens expire after 1 hour:
+
+```typescript
+// src/lib/mpesa/auth.ts
+const DARAJA_BASE_URL = process.env.MPESA_ENVIRONMENT === 'production'
+  ? 'https://api.safaricom.co.ke'
+  : 'https://sandbox.safaricom.co.ke'
+
+export async function getDarajaToken(): Promise<string> {
+  const credentials = Buffer.from(
+    `${process.env.MPESA_CONSUMER_KEY}:${process.env.MPESA_CONSUMER_SECRET}`
+  ).toString('base64')
+
+  const response = await fetch(
+    `${DARAJA_BASE_URL}/oauth/v1/generate?grant_type=client_credentials`,
+    {
+      headers: { Authorization: `Basic ${credentials}` },
+      next: { revalidate: 3500 }, // cache for just under 1 hour
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(`Daraja auth failed: ${response.status}`)
+  }
+
+  const data = await response.json() as { access_token: string }
+  return data.access_token
+}
+```
+
+## STK Push request
+
+```typescript
+// src/app/api/mpesa/stk-push/route.ts
+import { getDarajaToken, DARAJA_BASE_URL } from '@/lib/mpesa/auth'
+
+function generatePassword(shortcode: string, passkey: string, timestamp: string): string {
+  return Buffer.from(`${shortcode}${passkey}${timestamp}`).toString('base64')
+}
+
+function getTimestamp(): string {
+  return new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14)
+}
+
+export async function POST(request: Request) {
+  const { phoneNumber, amount, accountReference, orderId } = await request.json() as {
+    phoneNumber: string
+    amount: number
+    accountReference: string
+    orderId: string
+  }
+
+  const timestamp = getTimestamp()
+  const shortcode = process.env.MPESA_SHORTCODE!
+  const password = generatePassword(shortcode, process.env.MPESA_PASSKEY!, timestamp)
+  const token = await getDarajaToken()
+
+  const stkRequest: STKPushRequest = {
+    BusinessShortCode: shortcode,
+    Password: password,
+    Timestamp: timestamp,
+    TransactionType: 'CustomerPayBillOnline',
+    Amount: Math.ceil(amount), // M-Pesa requires integer amounts
+    PartyA: phoneNumber,
+    PartyB: shortcode,
+    PhoneNumber: phoneNumber,
+    CallBackURL: process.env.MPESA_CALLBACK_URL!,
+    AccountReference: accountReference,
+    TransactionDesc: `Payment for order ${orderId}`,
+  }
+
+  const response = await fetch(`${DARAJA_BASE_URL}/mpesa/stkpush/v1/processrequest`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(stkRequest),
+  })
+
+  const data = await response.json() as STKPushResponse
+
+  if (data.ResponseCode !== '0') {
+    return Response.json({ error: data.ResponseDescription }, { status: 400 })
+  }
+
+  // Store CheckoutRequestID for callback matching
+  // await db.payment.create({ orderId, checkoutRequestId: data.CheckoutRequestID, status: 'pending' })
+
+  return Response.json({
+    checkoutRequestId: data.CheckoutRequestID,
+    message: data.CustomerMessage,
+  }, { status: 201 })
+}
+```
+
+## Callback handler
+
+The callback arrives at your registered URL within 30 seconds. Verify the payload structure before updating order state:
+
+```typescript
+// src/app/api/mpesa/callback/route.ts
+export async function POST(request: Request) {
+  const body = await request.json() as MPesaCallback
+  const { stkCallback } = body.Body
+
+  // Always return 200 immediately — Daraja retries if it does not receive 200
+  const response = Response.json({ ResultCode: 0, ResultDesc: 'Success' })
+
+  const { CheckoutRequestID, ResultCode, ResultDesc } = stkCallback
+
+  if (ResultCode === 0) {
+    // Payment successful — extract transaction details from CallbackMetadata
+    const items = stkCallback.CallbackMetadata?.Item ?? []
+    const getValue = (name: string) => items.find(i => i.Name === name)?.Value
+
+    const mpesaReceiptNumber = getValue('MpesaReceiptNumber') as string
+    const transactionDate = getValue('TransactionDate') as number
+    const phoneNumber = getValue('PhoneNumber') as number
+
+    // await db.payment.update({
+    //   where: { checkoutRequestId: CheckoutRequestID },
+    //   data: { status: 'confirmed', mpesaReceiptNumber, transactionDate, phoneNumber }
+    // })
+  } else if (ResultCode === 1032) {
+    // User cancelled the STK Push prompt
+    // await db.payment.update({ where: { checkoutRequestId: CheckoutRequestID }, data: { status: 'cancelled' } })
+  } else if (ResultCode === 1037) {
+    // STK Push timed out — user did not respond within 30 seconds
+    // await db.payment.update({ where: { checkoutRequestId: CheckoutRequestID }, data: { status: 'expired' } })
+  }
+
+  return response
+}
+```
+
+## Idempotency
+
+STK Push requests must be idempotent — a user clicking "Pay" twice should not trigger two M-Pesa charges. Implement a lock before the Daraja API call:
+
+```typescript
+// Before calling getDarajaToken() in the stk-push route:
+const existingPayment = await redis.get(`payment:lock:${orderId}`)
+if (existingPayment) {
+  return Response.json({ error: 'Payment already in progress' }, { status: 409 })
+}
+
+// Set a 35-second lock (STK Push expires at 30 seconds + 5 second buffer)
+await redis.setex(`payment:lock:${orderId}`, 35, 'pending')
+```
+
+## Error states
+
+| ResultCode | Meaning | Handling |
+|---|---|---|
+| 0 | Success | Update order to confirmed |
+| 1032 | User cancelled | Update to cancelled, allow retry |
+| 1037 | Timeout | Update to expired, allow retry |
+| 1 | Insufficient funds | Update to failed, surface to user |
+
+## Sandbox vs production
+
+The only difference between sandbox and production is the `DARAJA_BASE_URL`. Sandbox credentials and production credentials are separate Daraja applications. Never use production credentials in development — Safaricom will flag the account.
+
+Set `MPESA_ENVIRONMENT=sandbox` in `.env.local` and `MPESA_ENVIRONMENT=production` in your Vercel production environment variables.
