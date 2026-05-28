@@ -132,17 +132,24 @@ export default function ContactForm() {
 
       <div>
         <label htmlFor="projectType" className="block text-sm font-medium text-neutral-700 mb-1">Project type</label>
-        <select
-          id="projectType"
-          name="projectType"
-          value={form.projectType}
-          onChange={(e) => handleChange('projectType', e.target.value as ContactFormData['projectType'])}
-          className="w-full appearance-none rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
-        >
-          {PROJECT_TYPES.map((opt) => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            id="projectType"
+            name="projectType"
+            value={form.projectType}
+            onChange={(e) => handleChange('projectType', e.target.value as ContactFormData['projectType'])}
+            className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+          >
+            {PROJECT_TYPES.map((opt) => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+          <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-neutral-500">
+            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+        </div>
         {errors.projectType && errors.projectType.length > 0 && (
           <div role="alert" className="text-sm text-red-600 mt-1">{errors.projectType[0]}</div>
         )}
@@ -165,18 +172,25 @@ export default function ContactForm() {
 
       <div>
         <label htmlFor="budgetRange" className="block text-sm font-medium text-neutral-700 mb-1">Budget range (optional)</label>
-        <select
-          id="budgetRange"
-          name="budgetRange"
-          value={form.budgetRange ?? ''}
-          onChange={(e) => handleChange('budgetRange', e.target.value ? (e.target.value as ContactFormData['budgetRange']) : undefined)}
-          className="w-full appearance-none rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
-        >
-          <option value="">Select</option>
-          {BUDGET_RANGES.map((opt) => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            id="budgetRange"
+            name="budgetRange"
+            value={form.budgetRange ?? ''}
+            onChange={(e) => handleChange('budgetRange', e.target.value ? (e.target.value as ContactFormData['budgetRange']) : undefined)}
+            className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+          >
+            <option value="">Select</option>
+            {BUDGET_RANGES.map((opt) => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+          <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-neutral-500">
+            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+        </div>
         {errors.budgetRange && errors.budgetRange.length > 0 && (
           <div role="alert" className="text-sm text-red-600 mt-1">{errors.budgetRange[0]}</div>
         )}
@@ -184,18 +198,25 @@ export default function ContactForm() {
 
       <div>
         <label htmlFor="timeline" className="block text-sm font-medium text-neutral-700 mb-1">Timeline (optional)</label>
-        <select
-          id="timeline"
-          name="timeline"
-          value={form.timeline ?? ''}
-          onChange={(e) => handleChange('timeline', e.target.value ? (e.target.value as ContactFormData['timeline']) : undefined)}
-          className="w-full appearance-none rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
-        >
-          <option value="">Select</option>
-          {TIMELINES.map((opt) => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            id="timeline"
+            name="timeline"
+            value={form.timeline ?? ''}
+            onChange={(e) => handleChange('timeline', e.target.value ? (e.target.value as ContactFormData['timeline']) : undefined)}
+            className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+          >
+            <option value="">Select</option>
+            {TIMELINES.map((opt) => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+          <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-neutral-500">
+            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+        </div>
         {errors.timeline && errors.timeline.length > 0 && (
           <div role="alert" className="text-sm text-red-600 mt-1">{errors.timeline[0]}</div>
         )}
