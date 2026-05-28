@@ -20,7 +20,9 @@ export default function AIAssistant() {
   const bottomRef = React.useRef<HTMLDivElement | null>(null)
 
   React.useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messages.length > 1) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
   }, [messages])
 
   const sessionLimitReached = sessionMessageCount >= 10
