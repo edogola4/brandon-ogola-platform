@@ -86,34 +86,59 @@ export default function ContactForm() {
   }
 
   return (
-    <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate>
+    <form className="mt-8 max-w-2xl space-y-6" onSubmit={handleSubmit} noValidate>
       <div>
-        <label htmlFor="name" className="block text-sm font-medium">Name</label>
-        <input id="name" name="name" value={form.name} onChange={(e) => handleChange('name', e.target.value)} className="mt-1 block w-full rounded-md border-neutral-200" />
+        <label htmlFor="name" className="block text-sm font-medium text-neutral-700 mb-1">Name</label>
+        <input
+          id="name"
+          name="name"
+          value={form.name}
+          onChange={(e) => handleChange('name', e.target.value)}
+          className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+        />
         {errors.name && errors.name.length > 0 && (
           <div role="alert" className="text-sm text-red-600 mt-1">{errors.name[0]}</div>
         )}
       </div>
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium">Email</label>
-        <input id="email" name="email" type="email" value={form.email} onChange={(e) => handleChange('email', e.target.value)} className="mt-1 block w-full rounded-md border-neutral-200" />
+        <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1">Email</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          value={form.email}
+          onChange={(e) => handleChange('email', e.target.value)}
+          className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+        />
         {errors.email && errors.email.length > 0 && (
           <div role="alert" className="text-sm text-red-600 mt-1">{errors.email[0]}</div>
         )}
       </div>
 
       <div>
-        <label htmlFor="company" className="block text-sm font-medium">Company / Organisation (optional)</label>
-        <input id="company" name="company" value={form.company ?? ''} onChange={(e) => handleChange('company', e.target.value || undefined)} className="mt-1 block w-full rounded-md border-neutral-200" />
+        <label htmlFor="company" className="block text-sm font-medium text-neutral-700 mb-1">Company / Organisation (optional)</label>
+        <input
+          id="company"
+          name="company"
+          value={form.company ?? ''}
+          onChange={(e) => handleChange('company', e.target.value || undefined)}
+          className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+        />
         {errors.company && errors.company.length > 0 && (
           <div role="alert" className="text-sm text-red-600 mt-1">{errors.company[0]}</div>
         )}
       </div>
 
       <div>
-        <label htmlFor="projectType" className="block text-sm font-medium">Project type</label>
-        <select id="projectType" name="projectType" value={form.projectType} onChange={(e) => handleChange('projectType', e.target.value as ContactFormData['projectType'])} className="mt-1 block w-full rounded-md border-neutral-200">
+        <label htmlFor="projectType" className="block text-sm font-medium text-neutral-700 mb-1">Project type</label>
+        <select
+          id="projectType"
+          name="projectType"
+          value={form.projectType}
+          onChange={(e) => handleChange('projectType', e.target.value as ContactFormData['projectType'])}
+          className="w-full appearance-none rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+        >
           {PROJECT_TYPES.map((opt) => (
             <option key={opt} value={opt}>{opt}</option>
           ))}
@@ -124,16 +149,29 @@ export default function ContactForm() {
       </div>
 
       <div>
-        <label htmlFor="brief" className="block text-sm font-medium">Project brief</label>
-        <textarea id="brief" name="brief" placeholder="Describe what you need built, the problem it solves, and any relevant context." value={form.brief} onChange={(e) => handleChange('brief', e.target.value)} className="mt-1 block w-full rounded-md border-neutral-200" rows={6} />
+        <label htmlFor="brief" className="block text-sm font-medium text-neutral-700 mb-1">Project brief</label>
+        <textarea
+          id="brief"
+          name="brief"
+          placeholder="Describe what you need built, the problem it solves, and any relevant context."
+          value={form.brief}
+          onChange={(e) => handleChange('brief', e.target.value)}
+          className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent min-h-[160px] resize-y"
+        />
         {errors.brief && errors.brief.length > 0 && (
           <div role="alert" className="text-sm text-red-600 mt-1">{errors.brief[0]}</div>
         )}
       </div>
 
       <div>
-        <label htmlFor="budgetRange" className="block text-sm font-medium">Budget range (optional)</label>
-        <select id="budgetRange" name="budgetRange" value={form.budgetRange ?? ''} onChange={(e) => handleChange('budgetRange', e.target.value ? (e.target.value as ContactFormData['budgetRange']) : undefined)} className="mt-1 block w-full rounded-md border-neutral-200">
+        <label htmlFor="budgetRange" className="block text-sm font-medium text-neutral-700 mb-1">Budget range (optional)</label>
+        <select
+          id="budgetRange"
+          name="budgetRange"
+          value={form.budgetRange ?? ''}
+          onChange={(e) => handleChange('budgetRange', e.target.value ? (e.target.value as ContactFormData['budgetRange']) : undefined)}
+          className="w-full appearance-none rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+        >
           <option value="">Select</option>
           {BUDGET_RANGES.map((opt) => (
             <option key={opt} value={opt}>{opt}</option>
@@ -145,8 +183,14 @@ export default function ContactForm() {
       </div>
 
       <div>
-        <label htmlFor="timeline" className="block text-sm font-medium">Timeline (optional)</label>
-        <select id="timeline" name="timeline" value={form.timeline ?? ''} onChange={(e) => handleChange('timeline', e.target.value ? (e.target.value as ContactFormData['timeline']) : undefined)} className="mt-1 block w-full rounded-md border-neutral-200">
+        <label htmlFor="timeline" className="block text-sm font-medium text-neutral-700 mb-1">Timeline (optional)</label>
+        <select
+          id="timeline"
+          name="timeline"
+          value={form.timeline ?? ''}
+          onChange={(e) => handleChange('timeline', e.target.value ? (e.target.value as ContactFormData['timeline']) : undefined)}
+          className="w-full appearance-none rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+        >
           <option value="">Select</option>
           {TIMELINES.map((opt) => (
             <option key={opt} value={opt}>{opt}</option>
