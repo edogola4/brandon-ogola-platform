@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import type { Metadata } from 'next'
 import { Badge } from '../../components/ui'
+import { generatePageMetadata } from '../../lib/metadata'
 import {
   PROFESSIONAL_SUMMARY,
   ENGINEERING_TIMELINE,
@@ -9,12 +9,12 @@ import {
   AVAILABILITY
 } from '../../content/data/about'
 
-export function generateMetadata(): Metadata {
-  return {
-    title: 'About — Brandon Ogola',
-    description:
-      'Full-stack software engineer based in Nairobi, Kenya. 2+ years delivering production systems in fintech, healthcare, and SaaS.'
-  }
+export function generateMetadata() {
+  return generatePageMetadata({
+    title: 'About',
+    description: 'Full-stack software engineer based in Nairobi, Kenya. 2+ years delivering production systems in fintech, healthcare, and SaaS.',
+    path: '/about',
+  })
 }
 
 export default function AboutPage() {

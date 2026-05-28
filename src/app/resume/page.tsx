@@ -20,12 +20,14 @@ import {
   SEP,
 } from '../../content/data/resume'
 
-export function generateMetadata(): Metadata {
-  return {
-    title: 'Resume — Brandon Ogola',
-    description:
-      'Full-stack software engineer resume — 2+ years delivering production systems in fintech, healthcare, and SaaS. Based in Nairobi, Kenya.',
-  }
+import { generatePageMetadata } from '../../lib/metadata'
+
+export function generateMetadata() {
+  return generatePageMetadata({
+    title: 'Resume',
+    description: 'Full-stack software engineer resume — 2+ years delivering production systems in fintech, healthcare, and SaaS. Based in Nairobi, Kenya.',
+    path: '/resume',
+  })
 }
 
 export default function ResumePage() {

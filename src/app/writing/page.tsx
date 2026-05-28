@@ -4,9 +4,14 @@ import Link from 'next/link'
 import { Tag } from '../../components/ui'
 import { ArticleFrontmatter } from '../../types/content'
 
-export const metadata = {
-  title: 'Writing — Brandon Ogola',
-  description: 'Technical articles on backend engineering, AI integrations, cloud infrastructure, and system design.',
+import { generatePageMetadata } from '../../lib/metadata'
+
+export function generateMetadata() {
+  return generatePageMetadata({
+    title: 'Writing',
+    description: 'Technical articles on backend engineering, AI integrations, cloud infrastructure, and system design.',
+    path: '/writing',
+  })
 }
 
 export default async function WritingPage() {

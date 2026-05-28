@@ -1,7 +1,7 @@
-import type { Metadata } from 'next'
 import React from 'react'
 import ServiceCard from '../../components/marketing/ServiceCard'
 import { ExternalLink } from '../../components/ui'
+import { generatePageMetadata } from '../../lib/metadata'
 import {
   SERVICES,
   ENGAGEMENT_MODEL,
@@ -16,12 +16,12 @@ import {
   CONTACT_LINKEDIN_URL,
 } from '../../content/data/services'
 
-export function generateMetadata(): Metadata {
-  return {
-    title: 'Services — Brandon Ogola',
-    description:
-      'Contract and freelance software engineering engagements — backend APIs, full-stack SaaS builds, AI integrations, and cloud infrastructure.',
-  }
+export function generateMetadata() {
+  return generatePageMetadata({
+    title: 'Services',
+    description: 'Contract and freelance software engineering engagements — backend APIs, full-stack SaaS builds, AI integrations, and cloud infrastructure.',
+    path: '/services',
+  })
 }
 
 export default function ServicesPage() {

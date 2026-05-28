@@ -3,6 +3,7 @@ import SkipLink from '../components/layout/SkipLink'
 import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
 import QueryProvider from '../components/providers/QueryProvider'
+import { Analytics } from '@vercel/analytics/next'
 
 export const metadata = {
   title: 'Brandon Ogola — Software Engineer',
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="main-content" role="main" className="pt-16">
           <QueryProvider>{children}</QueryProvider>
         </main>
+        <Analytics />
         <Footer />
       </body>
     </html>

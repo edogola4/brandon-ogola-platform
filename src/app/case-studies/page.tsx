@@ -4,9 +4,14 @@ import Link from 'next/link'
 import { Tag, Badge } from '../../components/ui'
 import { CaseStudyFrontmatter } from '../../types/content'
 
-export const metadata = {
-  title: 'Case Studies — Brandon Ogola',
-  description: 'Engineering case studies covering SaaS architecture, AI integrations, fintech systems, and cloud infrastructure.',
+import { generatePageMetadata } from '../../lib/metadata'
+
+export function generateMetadata() {
+  return generatePageMetadata({
+    title: 'Case Studies',
+    description: 'Engineering case studies covering SaaS architecture, AI integrations, fintech systems, and cloud infrastructure.',
+    path: '/case-studies',
+  })
 }
 
 export default async function CaseStudiesPage() {

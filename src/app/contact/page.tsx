@@ -1,11 +1,14 @@
 import React from 'react'
 import ContactForm from '../../components/contact/ContactForm'
 
+import { generatePageMetadata } from '../../lib/metadata'
+
 export function generateMetadata() {
-  return {
-    title: 'Contact — Brandon Ogola',
+  return generatePageMetadata({
+    title: 'Contact',
     description: 'Get in touch to discuss a contract or freelance software engineering engagement.',
-  }
+    path: '/contact',
+  })
 }
 
 export default function ContactPage() {
