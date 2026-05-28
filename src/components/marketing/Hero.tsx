@@ -3,22 +3,30 @@ import { Button } from '../ui'
 import { HERO } from '../../content/data/home'
 
 /**
- * Hero section — server component. All copy sourced from src/content/data/home.ts
+ * Hero section — server component. All copy sourced from src/content/data/home.ts.
  */
 export default function Hero() {
   return (
-    <section className="max-w-6xl mx-auto px-4 py-12">
-      <div className="max-w-3xl">
-        <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">{HERO.title}</h1>
-        <p className="mt-4 text-lg text-neutral-700">{HERO.subtitle}</p>
+    <section
+      aria-label="Introduction"
+      className="max-w-6xl mx-auto px-4 pt-16 pb-14 border-b border-neutral-100"
+    >
+      <div className="max-w-2xl">
+        <h1 className="text-4xl md:text-5xl font-extrabold leading-snug tracking-tight text-neutral-900">
+          {HERO.title}
+        </h1>
 
-        <div className="mt-6 flex flex-col sm:flex-row gap-3 sm:items-center">
-          <Button asChild variant="primary">
-            <Link href={HERO.primaryCta.href} className="inline-block">{HERO.primaryCta.label}</Link>
+        <p className="mt-5 text-lg leading-relaxed text-neutral-600">
+          {HERO.subtitle}
+        </p>
+
+        <div className="mt-8 flex flex-col sm:flex-row gap-3">
+          <Button asChild variant="primary" size="lg" className="w-full sm:w-auto justify-center">
+            <Link href={HERO.primaryCta.href}>{HERO.primaryCta.label}</Link>
           </Button>
 
-          <Button asChild variant="ghost">
-            <Link href={HERO.secondaryCta.href} className="inline-block">{HERO.secondaryCta.label}</Link>
+          <Button asChild variant="ghost" size="lg" className="w-full sm:w-auto justify-center">
+            <Link href={HERO.secondaryCta.href}>{HERO.secondaryCta.label}</Link>
           </Button>
         </div>
       </div>
