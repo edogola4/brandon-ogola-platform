@@ -41,10 +41,7 @@ export default function Page() {
       <GitHubActivity />
 
       {/* Issue #18 — AI assistant */}
-      <section className="max-w-6xl mx-auto px-4 py-12 border-t border-neutral-100">
-        <h2 className="text-2xl font-semibold mb-6">Ask me anything</h2>
-        <AIAssistant />
-      </section>
+      <AIAssistant />
 
       <AvailabilityCTA />
     </>
