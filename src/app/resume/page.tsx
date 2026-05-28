@@ -1,6 +1,5 @@
-import type { Metadata } from 'next'
 import React from 'react'
-import { Button, Tag, ExternalLink } from '../../components/ui'
+import { Tag, ExternalLink } from '../../components/ui'
 import {
   SKILLS,
   EXPERIENCE,
@@ -9,17 +8,13 @@ import {
   CERTIFICATIONS,
   PROFESSIONAL_SUMMARY,
   PAGE_TITLE,
-  DOWNLOAD_PDF_TEXT,
   HEADING_SUMMARY,
   HEADING_TECHNICAL,
   HEADING_EXPERIENCE,
   HEADING_EDUCATION,
   HEADING_PROJECTS,
   HEADING_CERTIFICATIONS,
-  DOWNLOAD_FILENAME,
-  SEP,
 } from '../../content/data/resume'
-
 import { generatePageMetadata } from '../../lib/metadata'
 
 export function generateMetadata() {
@@ -33,27 +28,32 @@ export function generateMetadata() {
 export default function ResumePage() {
   return (
     <main className="max-w-5xl mx-auto px-4 py-12 print:w-full print:mx-0">
-      <header className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">{PAGE_TITLE}</h1>
-        <Button variant="secondary" size="md" asChild className="print:hidden">
-          <a href={DOWNLOAD_FILENAME} download>
-            {DOWNLOAD_PDF_TEXT}
-          </a>
-        </Button>
-      </header>
 
-      <section className="mb-8">
-        <h2 className="text-2xl font-semibold">{HEADING_SUMMARY}</h2>
-        <p className="mt-3 text-gray-700">{PROFESSIONAL_SUMMARY}</p>
+      {/* Page header */}
+      <div className="border-b border-neutral-100 pb-8">
+        <h1 className="text-3xl font-bold text-neutral-900">{PAGE_TITLE}</h1>
+      </div>
+
+      {/* Summary */}
+      <section className="mt-10">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
+          {HEADING_SUMMARY}
+        </h2>
+        <p className="mt-4 text-neutral-700 leading-relaxed max-w-3xl">{PROFESSIONAL_SUMMARY}</p>
       </section>
 
-      <section className="mb-8">
-        <h2 className="text-2xl font-semibold">{HEADING_TECHNICAL}</h2>
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Technical skills */}
+      <section className="mt-10">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
+          {HEADING_TECHNICAL}
+        </h2>
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           {SKILLS.map((group) => (
             <div key={group.category}>
-              <div className="text-xs uppercase tracking-wide text-gray-500">{group.category}</div>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="text-xs font-medium uppercase tracking-wide text-neutral-400 mb-2">
+                {group.category}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
                 {group.items.map((item) => (
                   <Tag key={item} label={item} />
                 ))}
@@ -63,51 +63,28 @@ export default function ResumePage() {
         </div>
       </section>
 
-      <section className="mb-8">
-        <h2 className="text-2xl font-semibold">{HEADING_EXPERIENCE}</h2>
-        <div className="mt-4 space-y-6">
-          {EXPERIENCE.map((e) => (
-            <article key={`${e.company}${SEP}${e.period}`}>
-              <h3 className="text-lg font-semibold">{e.title}{SEP}{e.company}</h3>
-              <div className="text-sm text-gray-500">{e.location}{SEP}{e.period}</div>
-              <ul className="mt-3 list-disc list-inside space-y-2">
-                {e.achievements.map((a) => (
-                  <li key={a}>{a}</li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="mb-8">
-        <h2 className="text-2xl font-semibold">{HEADING_EDUCATION}</h2>
-        <div className="mt-4 space-y-4">
-          {EDUCATION.map((edu) => (
-            <article key={`${edu.institution}${edu.period}`}>
-              <h3 className="text-lg font-semibold">{edu.degree}</h3>
-              <div className="text-sm text-gray-500">{edu.institution}{SEP}{edu.location}{SEP}{edu.period}</div>
-              <p className="mt-2 text-gray-700">{edu.detail}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="mb-8">
-        <h2 className="text-2xl font-semibold">{HEADING_PROJECTS}</h2>
-        <div className="mt-4 space-y-6">
-          {PROJECTS.map((p) => (
-            <article key={p.name}>
-              <h3 className="text-lg font-semibold">
-                <ExternalLink href={p.url}>{p.name}</ExternalLink>
-              </h3>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <Tag label={p.stack} />
-                {p.period ? <div className="text-sm text-gray-500">{p.period}</div> : null}
+      {/* Experience */}
+      <section className="mt-10">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
+          {HEADING_EXPERIENCE}
+        </h2>
+        <div className="mt-6 space-y-0">
+          {EXPERIENCE.map((e, i) => (
+            <article
+              key={`${e.company}-${e.period}`}
+              className={i > 0 ? 'border-t border-neutral-100 pt-6 mt-6' : ''}
+            >
+              <div className="flex flex-wrap items-baseline gap-x-2">
+                <h3 className="text-base font-semibold text-neutral-900">{e.title}</h3>
+                <span className="text-neutral-300 select-none" aria-hidden="true">·</span>
+                <span className="text-sm text-neutral-500">{e.company}</span>
               </div>
-              <ul className="mt-3 list-disc list-inside space-y-2">
-                {p.highlights.map((h) => (
-                  <li key={h}>{h}</li>
+              <div className="mt-1 text-xs text-neutral-400">
+                {e.location} · {e.period}
+              </div>
+              <ul className="mt-3 pl-5 list-disc space-y-1.5">
+                {e.achievements.map((a) => (
+                  <li key={a} className="text-sm text-neutral-700 leading-relaxed">{a}</li>
                 ))}
               </ul>
             </article>
@@ -115,14 +92,79 @@ export default function ResumePage() {
         </div>
       </section>
 
-      <section>
-        <h2 className="text-2xl font-semibold">{HEADING_CERTIFICATIONS}</h2>
-        <ul className="mt-4 list-disc list-inside space-y-2">
+      {/* Education */}
+      <section className="mt-10">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
+          {HEADING_EDUCATION}
+        </h2>
+        <div className="mt-6 space-y-0">
+          {EDUCATION.map((edu, i) => (
+            <article
+              key={`${edu.institution}-${edu.period}`}
+              className={i > 0 ? 'border-t border-neutral-100 pt-6 mt-6' : ''}
+            >
+              <h3 className="text-base font-semibold text-neutral-900">{edu.degree}</h3>
+              <div className="mt-1 text-xs text-neutral-400">
+                {edu.institution} · {edu.location} · {edu.period}
+              </div>
+              <p className="mt-2 text-sm text-neutral-600 leading-relaxed">{edu.detail}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* Projects */}
+      <section className="mt-10">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
+          {HEADING_PROJECTS}
+        </h2>
+        <div className="mt-6 space-y-0">
+          {PROJECTS.map((p, i) => (
+            <article
+              key={p.name}
+              className={i > 0 ? 'border-t border-neutral-100 pt-6 mt-6' : ''}
+            >
+              <div className="flex flex-wrap items-baseline gap-x-3">
+                <h3 className="text-base font-semibold text-neutral-900">
+                  {p.url ? (
+                    <ExternalLink href={p.url} className="hover:text-neutral-600">
+                      {p.name}
+                    </ExternalLink>
+                  ) : (
+                    p.name
+                  )}
+                </h3>
+                {p.period && (
+                  <span className="text-xs text-neutral-400">{p.period}</span>
+                )}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {p.stack.map((s) => (
+                  <Tag key={s} label={s} />
+                ))}
+              </div>
+              <ul className="mt-3 pl-5 list-disc space-y-1.5">
+                {p.highlights.map((h) => (
+                  <li key={h} className="text-sm text-neutral-700 leading-relaxed">{h}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* Certifications */}
+      <section className="mt-10">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
+          {HEADING_CERTIFICATIONS}
+        </h2>
+        <ul className="mt-6 pl-5 list-disc space-y-2">
           {CERTIFICATIONS.map((c) => (
-            <li key={c}>{c}</li>
+            <li key={c} className="text-sm text-neutral-700 leading-relaxed">{c}</li>
           ))}
         </ul>
       </section>
+
     </main>
   )
 }

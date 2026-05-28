@@ -59,7 +59,7 @@ export const SKILLS: SkillGroup[] = [
       'M-Pesa Daraja API',
       'Pesapal',
       'Shopify API',
-      "WhatsApp Business API",
+      'WhatsApp Business API',
       "Africa's Talking SMS",
       'SendGrid',
       'Turborepo',
@@ -123,7 +123,7 @@ export const EXPERIENCE: ExperienceEntry[] = [
     period: 'October 2023 — October 2024',
     achievements: [
       'Built a mobile-first e-commerce platform (Riggs London Kenya) as a solo monorepo using Next.js 14, Fastify, PostgreSQL with pgvector, and Redis, integrated with M-Pesa STK Push and Pesapal for payments and an Anthropic Claude chatbot for AI-powered purchase guidance',
-      'Implemented semantic product search using OpenAI text-embedding-3-small and pgvector, and delivered real-time order notifications via WhatsApp Business API, Africa\'s Talking, and SendGrid syncing Shopify as the inventory source of truth',
+      "Implemented semantic product search using OpenAI text-embedding-3-small and pgvector, and delivered real-time order notifications via WhatsApp Business API, Africa's Talking, and SendGrid syncing Shopify as the inventory source of truth",
       'Built a real-time collaborative coding platform using TypeScript, Node.js, Socket.io, and Redis with WebSocket-powered multi-user synchronisation',
       'Deployed all projects on AWS/Railway/Vercel with GitHub Actions CI/CD pipelines for automated testing and zero-downtime releases',
     ],
@@ -176,8 +176,10 @@ export const EDUCATION: EducationEntry[] = [
 
 export type Project = {
   name: string
-  stack: string
+  /** Array of individual technology names — rendered as separate Tag components */
+  stack: string[]
   period: string
+  /** Specific repo URL, or empty string if no public repo exists yet */
   url: string
   highlights: string[]
 }
@@ -185,7 +187,7 @@ export type Project = {
 export const PROJECTS: Project[] = [
   {
     name: 'SmartSchedule Healthcare',
-    stack: '.NET 10, C#, ASP.NET Core, Blazor WebAssembly, Azure, Terraform',
+    stack: ['.NET 10', 'C#', 'ASP.NET Core', 'Blazor WebAssembly', 'Azure', 'Terraform'],
     period: 'MVP Q2 2026',
     url: 'https://github.com/edogola4/smartschedule-healthcare',
     highlights: [
@@ -195,9 +197,9 @@ export const PROJECTS: Project[] = [
   },
   {
     name: 'Riggs London Kenya',
-    stack: 'Next.js 14, Fastify, PostgreSQL (pgvector), Redis, Prisma, Tailwind CSS, Turborepo',
+    stack: ['Next.js 14', 'Fastify', 'PostgreSQL', 'pgvector', 'Redis', 'Prisma', 'Turborepo'],
     period: 'In Progress',
-    url: 'https://github.com/edogola4',
+    url: '',
     highlights: [
       'Mobile-first e-commerce platform with M-Pesa STK Push, Pesapal, AI Scent Advisor (Claude 3.5 Haiku), and semantic search via pgvector',
       'Deployed on Railway + Vercel at ~$108/month',
@@ -205,9 +207,9 @@ export const PROJECTS: Project[] = [
   },
   {
     name: 'Microservices Platform with Full CI/CD',
-    stack: 'Docker, Kubernetes, GitHub Actions, AWS',
+    stack: ['Docker', 'Kubernetes', 'GitHub Actions', 'AWS'],
     period: '',
-    url: 'https://github.com/edogola4',
+    url: '',
     highlights: [
       'Containerised microservices on AWS orchestrated with Kubernetes',
       'GitHub Actions CI/CD with multi-stage testing and zero-downtime rolling deployments',
@@ -215,9 +217,9 @@ export const PROJECTS: Project[] = [
   },
   {
     name: 'AI-Powered Customer Support Chatbot',
-    stack: 'Python, TensorFlow, NLP, REST APIs',
+    stack: ['Python', 'TensorFlow', 'NLP', 'REST APIs'],
     period: '',
-    url: 'https://github.com/edogola4',
+    url: '',
     highlights: [
       '95% intent recognition accuracy using NLP and TensorFlow',
       'Reduced customer support response time by 40% through automated query handling',
@@ -228,7 +230,6 @@ export const PROJECTS: Project[] = [
 export const CERTIFICATIONS: string[] = [
   'ALX Software Engineering Program — Full-stack development, algorithms, system design (2023–2024)',
   'Moringa School Software Development Bootcamp — Full-stack development (2022)',
-  "Ongoing: AI/LLM integrations and cloud-native architecture",
 ]
 
 export const PROFESSIONAL_SUMMARY =
@@ -236,12 +237,9 @@ export const PROFESSIONAL_SUMMARY =
 
 // UI labels
 export const PAGE_TITLE = 'Resume'
-export const DOWNLOAD_PDF_TEXT = 'Download PDF'
 export const HEADING_SUMMARY = 'Summary'
 export const HEADING_TECHNICAL = 'Technical skills'
 export const HEADING_EXPERIENCE = 'Experience'
 export const HEADING_EDUCATION = 'Education'
 export const HEADING_PROJECTS = 'Projects'
 export const HEADING_CERTIFICATIONS = 'Certifications'
-export const DOWNLOAD_FILENAME = '/brandon-ogola-cv.pdf'
-export const SEP = ' — '
