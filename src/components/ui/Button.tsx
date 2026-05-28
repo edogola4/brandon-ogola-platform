@@ -65,17 +65,12 @@ export function Button({ variant = 'primary', size = 'md', loading = false, disa
   if (asChild && React.isValidElement(children)) {
     const child = children as React.ReactElement<React.HTMLAttributes<HTMLElement>>
     // Do not attempt to read child.props.* (unsafe across arbitrary element types).
-    // Instead override className and handlers on the cloned element.
+    // Avoid passing event handler functions to the child during server rendering —
+    // cloning with function props causes prerender errors when the child is a
+    // Client Component (e.g., next/link). Only override className and aria attributes.
     return React.cloneElement(child, {
       className: classes,
-      'aria-disabled': disabled || loading,
-      onClick: (e: React.MouseEvent) => {
-        if (disabled || loading) {
-          e.preventDefault()
-          return
-        }
-        onClick?.(e)
-      }
+      'aria-disabled': disabled || loading
     })
   }
 
