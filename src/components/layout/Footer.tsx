@@ -16,15 +16,15 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="w-full border-t border-neutral-200 mt-12">
+    <footer className="w-full mt-12">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+          <div className="text-left">
             <div className="text-lg font-semibold">Brandon Ogola</div>
           </div>
 
           <nav className="flex items-center justify-center">
-            <ul className="flex flex-wrap gap-4 text-sm">
+            <ul className="flex flex-wrap md:flex-nowrap gap-4 text-sm">
               {navLinks.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-sm">
@@ -42,7 +42,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-6 text-center text-xs text-neutral-600">
+        <div className="mt-6 border-t border-neutral-200 pt-4 text-center text-xs text-neutral-600">
           © {year} Brandon Ogola. Built with Next.js. Deployed on Vercel.
         </div>
       </div>
