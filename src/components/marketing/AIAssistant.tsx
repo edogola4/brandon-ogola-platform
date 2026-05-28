@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import { Button } from '../ui'
 
 type Role = 'user' | 'assistant'
 type ChatMessage = { id: string; role: Role; content: string }
@@ -108,63 +107,108 @@ export default function AIAssistant() {
         Ask me anything
       </h2>
 
-      <div className="max-w-2xl">
+      {/* Chat window */}
+      <div className="max-w-2xl border border-neutral-200 rounded-xl overflow-hidden shadow-sm">
+
+        {/* Header */}
+        <div className="flex items-center gap-3 px-4 py-3 bg-neutral-900 border-b border-neutral-800">
+          <div className="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center shrink-0">
+            <span className="text-xs font-semibold text-white" aria-hidden="true">B</span>
+          </div>
+          <div>
+            <div className="text-sm font-medium text-white leading-none">Brandon&apos;s Assistant</div>
+            <div className="text-xs text-neutral-400 mt-0.5">Answers questions about my work</div>
+          </div>
+          <div className="ml-auto flex items-center gap-1.5" aria-hidden="true">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span className="text-xs text-neutral-400">Online</span>
+          </div>
+        </div>
+
+        {/* Message area */}
         <div
           role="log"
           aria-live="polite"
           aria-label="Conversation with AI assistant"
-          className="space-y-3"
+          className="h-80 overflow-y-auto px-4 py-4 space-y-3 bg-white"
         >
           {messages.map((m) => (
             <div
               key={m.id}
-              className={`flex ${
+              className={`flex items-end gap-2 ${
                 m.role === 'user' ? 'justify-end' : 'justify-start'
               }`}
             >
+              {/* Assistant avatar */}
+              {m.role === 'assistant' && (
+                <div className="w-6 h-6 rounded-full bg-neutral-900 flex items-center justify-center shrink-0 mb-0.5">
+                  <span className="text-[10px] font-semibold text-white" aria-hidden="true">B</span>
+                </div>
+              )}
+
               <div
-                className={`rounded-md px-4 py-2.5 text-sm max-w-prose leading-relaxed ${
+                className={`rounded-2xl px-4 py-2.5 text-sm max-w-[75%] leading-relaxed ${
                   m.role === 'user'
-                    ? 'bg-neutral-900 text-white'
-                    : 'bg-neutral-100 text-neutral-800'
+                    ? 'bg-neutral-900 text-white rounded-br-sm'
+                    : 'bg-neutral-100 text-neutral-800 rounded-bl-sm'
                 }`}
               >
                 {m.content}
                 {m.content === '' && isLoading && (
-                  <span className="inline-flex gap-1 ml-1" aria-label="Thinking">
-                    <span className="w-1 h-1 rounded-full bg-neutral-400 animate-bounce [animation-delay:0ms]" />
-                    <span className="w-1 h-1 rounded-full bg-neutral-400 animate-bounce [animation-delay:150ms]" />
-                    <span className="w-1 h-1 rounded-full bg-neutral-400 animate-bounce [animation-delay:300ms]" />
+                  <span className="inline-flex gap-1" aria-label="Thinking">
+                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 animate-bounce [animation-delay:0ms]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 animate-bounce [animation-delay:150ms]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 animate-bounce [animation-delay:300ms]" />
                   </span>
                 )}
               </div>
+
+              {/* User avatar */}
+              {m.role === 'user' && (
+                <div className="w-6 h-6 rounded-full bg-neutral-300 flex items-center justify-center shrink-0 mb-0.5">
+                  <span className="text-[10px] font-semibold text-neutral-700" aria-hidden="true">You</span>
+                </div>
+              )}
             </div>
           ))}
           <div ref={bottomRef} />
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-4 flex gap-2">
-          <label htmlFor="ai-input" className="sr-only">Message</label>
-          <input
-            id="ai-input"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            disabled={isLoading || sessionLimitReached}
-            placeholder="Ask about my work, stack, or availability…"
-            className="flex-1 rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent disabled:opacity-50"
-          />
-          <Button type="submit" variant="primary" size="sm" loading={isLoading}>
-            Send
-          </Button>
-        </form>
+        {/* Input row */}
+        <div className="px-4 py-3 bg-white border-t border-neutral-100">
+          <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+            <label htmlFor="ai-input" className="sr-only">Message</label>
+            <input
+              id="ai-input"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={isLoading || sessionLimitReached}
+              placeholder={sessionLimitReached ? 'Session limit reached' : 'Ask about my work, stack, or availability…'}
+              className="flex-1 rounded-full border border-neutral-200 bg-neutral-50 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent disabled:opacity-50"
+            />
+            <button
+              type="submit"
+              disabled={isLoading || sessionLimitReached || !input.trim()}
+              aria-label="Send message"
+              className="w-9 h-9 rounded-full bg-neutral-900 flex items-center justify-center shrink-0 disabled:opacity-40 hover:bg-neutral-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
+            >
+              {isLoading ? (
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+              ) : (
+                <svg className="w-4 h-4 text-white" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M14 8L2 2l3 6-3 6 12-6z" fill="currentColor" />
+                </svg>
+              )}
+            </button>
+          </form>
 
-        {sessionLimitReached && (
-          <p className="mt-3 text-xs text-neutral-500">
-            Session limit reached.{' '}
-            <a href="mailto:edogola4@gmail.com" className="underline">Email directly</a>{' '}
-            for further questions.
-          </p>
-        )}
+          {sessionLimitReached && (
+            <p className="mt-2 text-xs text-neutral-400 text-center">
+              Session limit reached.{' '}
+              <a href="mailto:edogola4@gmail.com" className="underline hover:text-neutral-600">Email directly</a>.
+            </p>
+          )}
+        </div>
       </div>
     </section>
   )
