@@ -18,6 +18,7 @@ import {
   CONTACT_BODY,
   CONTACT_CTA_LABEL,
   CONTACT_CTA_HREF,
+  CONTACT_EMAIL_LABEL,
   CONTACT_EMAIL,
   CONTACT_LINKEDIN_TEXT,
   CONTACT_LINKEDIN_URL,
@@ -100,10 +101,16 @@ export default function ServicesPage() {
             <Link href={CONTACT_CTA_HREF}>{CONTACT_CTA_LABEL}</Link>
           </Button>
         </div>
-        <div className="mt-5 flex flex-col gap-2">
-          <ExternalLink href={`mailto:${CONTACT_EMAIL}`} className="text-sm text-neutral-500">
-            {CONTACT_EMAIL}
-          </ExternalLink>
+        <div className="mt-6 pt-6 border-t border-neutral-100 flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-neutral-400">{CONTACT_EMAIL_LABEL}</span>
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="text-sm text-neutral-700 underline hover:text-neutral-900 transition-colors"
+            >
+              {CONTACT_EMAIL}
+            </a>
+          </div>
           <ExternalLink href={CONTACT_LINKEDIN_URL} className="text-sm text-neutral-500">
             {CONTACT_LINKEDIN_TEXT}
           </ExternalLink>
