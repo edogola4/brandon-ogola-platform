@@ -19,6 +19,20 @@ export default async function CaseStudiesPage() {
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-12">
+
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="mb-6">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-sm text-neutral-400 hover:text-neutral-900 transition-colors"
+        >
+          <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Home
+        </Link>
+      </nav>
+
       <h1 className="text-3xl font-bold">Case Studies</h1>
       <p className="mt-3 text-neutral-600 max-w-2xl">
         {CASE_STUDIES_PAGE.intro}
@@ -27,42 +41,47 @@ export default async function CaseStudiesPage() {
       {items.length === 0 ? (
         <p className="mt-8 text-neutral-600">Case studies coming soon.</p>
       ) : (
-        <div className="mt-8 space-y-4">
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((c) => {
             const { label, variant } = formatStatus(c.status)
+            const firstOutcome = c.outcomes[0]
             return (
               <article
                 key={c.slug}
-                className="border border-neutral-200 rounded-lg p-5 hover:border-neutral-400 transition-colors"
+                className="border border-neutral-200 rounded-lg p-5 flex flex-col gap-3 hover:border-neutral-400 transition-colors"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <h2 className="text-lg font-semibold leading-snug">
-                      <Link
-                        href={`/case-studies/${c.slug}`}
-                        className="hover:underline"
-                      >
-                        {c.title}
-                      </Link>
-                    </h2>
-                    <p className="mt-1.5 text-sm text-neutral-600 line-clamp-2">{c.summary}</p>
-                    <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                      <span className="text-xs text-neutral-400">{c.client}</span>
-                      <span className="text-xs text-neutral-300" aria-hidden="true">·</span>
-                      <span className="text-xs text-neutral-400">{formatDate(c.date)}</span>
-                      {c.readingTime && (
-                        <>
-                          <span className="text-xs text-neutral-300" aria-hidden="true">·</span>
-                          <span className="text-xs text-neutral-400">{c.readingTime} min read</span>
-                        </>
-                      )}
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {c.tags.map((t) => <Tag key={t} label={t} />)}
-                    </div>
+                {/* Title + badge */}
+                <div className="flex items-start justify-between gap-2">
+                  <h2 className="text-sm font-semibold text-neutral-900 leading-snug">
+                    <Link href={`/case-studies/${c.slug}`} className="hover:underline">
+                      {c.title}
+                    </Link>
+                  </h2>
+                  <Badge variant={variant} className="whitespace-nowrap shrink-0">{label}</Badge>
+                </div>
+
+                {/* Summary */}
+                <p className="text-sm text-neutral-500 leading-relaxed line-clamp-2 flex-1">{c.summary}</p>
+
+                {/* Key outcome */}
+                {firstOutcome && (
+                  <div className="border border-neutral-100 rounded-md px-3 py-2 bg-neutral-50">
+                    <div className="text-xs text-neutral-400 uppercase tracking-wide">{firstOutcome.metric}</div>
+                    <div className="text-lg font-bold text-neutral-900 mt-0.5">{firstOutcome.value}</div>
                   </div>
-                  <div className="shrink-0 pt-0.5">
-                    <Badge variant={variant} className="whitespace-nowrap">{label}</Badge>
+                )}
+
+                {/* Tags */}
+                <div className="flex flex-wrap gap-1.5">
+                  {c.tags.slice(0, 3).map((t) => <Tag key={t} label={t} />)}
+                </div>
+
+                {/* Meta */}
+                <div className="flex items-center justify-between text-xs text-neutral-400 pt-1 border-t border-neutral-100">
+                  <span>{c.client}</span>
+                  <div className="flex items-center gap-2">
+                    {c.readingTime && <span>{c.readingTime} min read</span>}
+                    <span>{formatDate(c.date)}</span>
                   </div>
                 </div>
               </article>

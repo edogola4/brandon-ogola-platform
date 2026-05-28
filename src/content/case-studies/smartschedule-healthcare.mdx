@@ -156,9 +156,9 @@ Expected MVP: Q2 2026. The MVP scope includes the Scheduling Service, Identity S
 
 The following target outcomes are projections based on comparable interventions and early piloting assumptions.
 
-<OutcomeCard metric="Target no-show reduction" value="40%" context="Projected based on comparable scheduling intervention studies in similar healthcare markets" />
+<OutcomeCard metric="Target no-show reduction" value="40%" context="Projected based on comparable scheduling intervention studies in similar healthcare markets" projected={true} />
 
-<OutcomeCard metric="Target admin efficiency gain" value="50%" context="Reduction in manual scheduling and follow-up overhead for clinic staff" />
+<OutcomeCard metric="Target admin efficiency gain" value="50%" context="Reduction in manual scheduling and follow-up overhead for clinic staff" projected={true} />
 
 <OutcomeCard metric="Environments provisioned" value="3" context="dev, staging, and production — fully reproducible via Terraform" />
 
@@ -174,4 +174,4 @@ The following target outcomes are projections based on comparable interventions 
 
 This architecture deliberately chooses managed Azure services to reduce operational surface area while retaining the ability to migrate to alternative cloud providers if needed. The design intent is to be honest about current capabilities: the project is in-development, several controls are intentionally scoped for the MVP, and full HIPAA compliance (including BAAs and formal assessments) is a planned activity before any production deployment with real patient data.
 
-For implementation details and repository references see: https://github.com/edogola4
+For implementation details and repository references see: [github.com/edogola4](https://github.com/edogola4)
