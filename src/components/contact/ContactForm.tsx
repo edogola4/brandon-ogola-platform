@@ -206,8 +206,8 @@ export default function ContactForm() {
       )}
 
       <div>
-        <Button asChild loading={submitting}>
-          <button type="submit">Send inquiry</button>
+        <Button type="submit" loading={submitting}>
+          Send inquiry
         </Button>
       </div>
     </form>

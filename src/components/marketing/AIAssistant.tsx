@@ -108,8 +108,8 @@ export default function AIAssistant() {
       <form onSubmit={handleSubmit} className="mt-4 flex gap-2 items-center">
         <label htmlFor="ai-input" className="sr-only">Message</label>
         <input id="ai-input" value={input} onChange={(e) => setInput(e.target.value)} disabled={isLoading || sessionLimitReached} className="flex-1 rounded-md border-neutral-200" />
-        <Button variant="primary" loading={isLoading}>
-          <button type="submit" aria-label="Send message">Send</button>
+        <Button type="submit" variant="primary" loading={isLoading} aria-label="Send message">
+          Send
         </Button>
       </form>
 
