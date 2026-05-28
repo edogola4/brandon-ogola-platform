@@ -10,6 +10,7 @@ function makeId() {
 }
 
 export default function AIAssistant() {
+  const [open, setOpen] = React.useState(false)
   const [messages, setMessages] = React.useState<ChatMessage[]>([
     { id: 'init', role: 'assistant', content: "Ask me anything about Brandon's engineering work, projects, or availability." },
   ])
@@ -18,12 +19,37 @@ export default function AIAssistant() {
   const [sessionMessageCount, setSessionMessageCount] = React.useState(0)
   const sessionIdRef = React.useRef<string>(crypto.randomUUID())
   const bottomRef = React.useRef<HTMLDivElement | null>(null)
+  const inputRef = React.useRef<HTMLInputElement | null>(null)
 
+  // Scroll to bottom on new messages
   React.useEffect(() => {
     if (messages.length > 1) {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
   }, [messages])
+
+  // Focus input when drawer opens
+  React.useEffect(() => {
+    if (open) {
+      setTimeout(() => inputRef.current?.focus(), 50)
+    }
+  }, [open])
+
+  // Close on Escape
+  React.useEffect(() => {
+    if (!open) return
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
+
+  // Lock body scroll when drawer is open
+  React.useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [open])
 
   const sessionLimitReached = sessionMessageCount >= 10
 
@@ -98,32 +124,60 @@ export default function AIAssistant() {
   }
 
   return (
-    <section
-      aria-labelledby="ai-heading"
-      className="max-w-6xl mx-auto px-4 py-12 border-b border-neutral-100"
-    >
-      <h2
-        id="ai-heading"
-        className="text-xs font-semibold uppercase tracking-widest text-neutral-400 mb-6"
+    <>
+      {/* Fixed vertical tab trigger */}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="Open AI assistant"
+        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-neutral-900 text-white text-xs font-medium tracking-widest uppercase px-2 py-4 rounded-l-md hover:bg-neutral-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
+        style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
       >
-        Ask me anything
-      </h2>
+        Ask a question
+      </button>
 
-      {/* Chat window */}
-      <div className="max-w-2xl border border-neutral-200 rounded-xl overflow-hidden shadow-sm">
+      {/* Backdrop */}
+      {open && (
+        <div
+          aria-hidden="true"
+          className="fixed inset-0 z-40 bg-black/30"
+          onClick={() => setOpen(false)}
+        />
+      )}
 
-        {/* Header */}
-        <div className="flex items-center gap-3 px-4 py-3 bg-neutral-900 border-b border-neutral-800">
+      {/* Drawer */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="AI assistant"
+        className={`fixed top-0 right-0 h-full w-full max-w-sm z-50 flex flex-col bg-white shadow-xl transition-transform duration-300 ease-in-out ${
+          open ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        {/* Drawer header */}
+        <div className="flex items-center gap-3 px-4 py-3 bg-neutral-900 border-b border-neutral-800 shrink-0">
           <div className="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center shrink-0">
             <span className="text-xs font-semibold text-white" aria-hidden="true">B</span>
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-white leading-none">Brandon&apos;s Assistant</div>
             <div className="text-xs text-neutral-400 mt-0.5">Answers questions about my work</div>
           </div>
-          <div className="ml-auto flex items-center gap-1.5" aria-hidden="true">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span className="text-xs text-neutral-400">Online</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5" aria-hidden="true">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="text-xs text-neutral-400">Online</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Close assistant"
+              className="text-neutral-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -132,24 +186,20 @@ export default function AIAssistant() {
           role="log"
           aria-live="polite"
           aria-label="Conversation with AI assistant"
-          className="h-80 overflow-y-auto px-4 py-4 space-y-3 bg-white"
+          className="flex-1 overflow-y-auto px-4 py-4 space-y-3"
         >
           {messages.map((m) => (
             <div
               key={m.id}
-              className={`flex items-end gap-2 ${
-                m.role === 'user' ? 'justify-end' : 'justify-start'
-              }`}
+              className={`flex items-end gap-2 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              {/* Assistant avatar */}
               {m.role === 'assistant' && (
                 <div className="w-6 h-6 rounded-full bg-neutral-900 flex items-center justify-center shrink-0 mb-0.5">
                   <span className="text-[10px] font-semibold text-white" aria-hidden="true">B</span>
                 </div>
               )}
-
               <div
-                className={`rounded-2xl px-4 py-2.5 text-sm max-w-[75%] leading-relaxed ${
+                className={`rounded-2xl px-4 py-2.5 text-sm max-w-[80%] leading-relaxed ${
                   m.role === 'user'
                     ? 'bg-neutral-900 text-white rounded-br-sm'
                     : 'bg-neutral-100 text-neutral-800 rounded-bl-sm'
@@ -164,8 +214,6 @@ export default function AIAssistant() {
                   </span>
                 )}
               </div>
-
-              {/* User avatar */}
               {m.role === 'user' && (
                 <div className="w-6 h-6 rounded-full bg-neutral-300 flex items-center justify-center shrink-0 mb-0.5">
                   <span className="text-[10px] font-semibold text-neutral-700" aria-hidden="true">You</span>
@@ -177,15 +225,16 @@ export default function AIAssistant() {
         </div>
 
         {/* Input row */}
-        <div className="px-4 py-3 bg-white border-t border-neutral-100">
+        <div className="px-4 py-3 border-t border-neutral-100 shrink-0">
           {!sessionLimitReached && sessionMessageCount >= 7 && (
             <p className="mb-2 text-xs text-neutral-400 text-center">
-              {10 - sessionMessageCount} message{10 - sessionMessageCount === 1 ? '' : 's'} remaining in this session
+              {10 - sessionMessageCount} message{10 - sessionMessageCount === 1 ? '' : 's'} remaining
             </p>
           )}
           <form onSubmit={handleSubmit} className="flex gap-2 items-center">
             <label htmlFor="ai-input" className="sr-only">Message</label>
             <input
+              ref={inputRef}
               id="ai-input"
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -208,7 +257,6 @@ export default function AIAssistant() {
               )}
             </button>
           </form>
-
           {sessionLimitReached && (
             <p className="mt-2 text-xs text-neutral-400 text-center">
               Session limit reached.{' '}
@@ -217,6 +265,6 @@ export default function AIAssistant() {
           )}
         </div>
       </div>
-    </section>
+    </>
   )
 }

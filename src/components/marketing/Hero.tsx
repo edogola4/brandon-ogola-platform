@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { Button } from '../ui'
 import { HERO } from '../../content/data/home'
-import HeroAnchorCta from './HeroAnchorCta'
 
 export default function Hero() {
   return (
@@ -29,10 +28,6 @@ export default function Hero() {
           <Button asChild variant="ghost" size="lg" className="w-full sm:w-auto justify-center">
             <Link href={HERO.secondaryCta.href}>{HERO.secondaryCta.label}</Link>
           </Button>
-        </div>
-
-        <div className="mt-5">
-          <HeroAnchorCta />
         </div>
       </div>
     </section>

@@ -5,7 +5,6 @@ export const HERO = {
   location: 'Based in Nairobi, Kenya · Open to remote contract engagements.',
   primaryCta: { href: '/case-studies', label: 'View case studies' },
   secondaryCta: { href: '/services', label: 'Work with me' },
-  anchorCta: { href: '#ai-heading', label: 'Have a question? Ask my assistant' },
 }
 
 export const CASE_STUDIES_PAGE = {
