@@ -38,7 +38,6 @@ export default function Page() {
       {/* TODO: Issue #17 — WritingPreview (requires MDX content) */}
 
       {/* Issue #11 — GitHubActivity */}
-      {/* GitHub activity feed (client-side) */}
       <GitHubActivity />
 
       {/* Issue #18 — AI assistant */}
