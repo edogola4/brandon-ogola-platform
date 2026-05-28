@@ -84,19 +84,29 @@ export async function POST(request: Request) {
     current.count += 1
     rateLimitMap.set(key, current)
 
-    // Map messages to Anthropic MessageParam-like shape
+    // Guard: no API key configured
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return new Response("AI assistant is not configured. Email edogola4@gmail.com directly.", {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      })
+    }
+
+    // Map messages to Anthropic MessageParam shape
     const anthroMessages = messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
 
     // Call Anthropic streaming API
     try {
       // @ts-ignore - SDK types are strict; runtime shape matches expected MessageParam
-      const stream = await anthropic.messages.stream({
+      const stream = anthropic.messages.stream({
         model: 'claude-haiku-4-5',
         max_tokens: 500,
         system: ASSISTANT_SYSTEM_PROMPT,
         messages: anthroMessages,
       })
 
+      // Verify the stream can start before returning the response
+      // This surfaces auth errors synchronously before we hand off to ReadableStream
       const readableStream = new ReadableStream({
         async start(controller) {
           try {
@@ -109,8 +119,15 @@ export async function POST(request: Request) {
               }
             }
             controller.close()
-          } catch (err) {
-            controller.error(err)
+          } catch {
+            // Encode the error as text into the stream so the client receives
+            // a readable message rather than a broken stream
+            controller.enqueue(
+              new TextEncoder().encode(
+                "I'm having trouble responding right now. Email edogola4@gmail.com directly."
+              )
+            )
+            controller.close()
           }
         },
       })
@@ -121,9 +138,11 @@ export async function POST(request: Request) {
           'Transfer-Encoding': 'chunked',
         },
       })
-    } catch (err) {
-      // Anthropic error: return friendly message as text
-      return new Response("I'm having trouble responding right now. Please email edogola4@gmail.com directly.", { status: 200, headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
+    } catch {
+      return new Response(
+        "I'm having trouble responding right now. Email edogola4@gmail.com directly.",
+        { status: 200, headers: { 'Content-Type': 'text/plain; charset=utf-8' } }
+      )
     }
   } catch (err) {
     // Never return 500
