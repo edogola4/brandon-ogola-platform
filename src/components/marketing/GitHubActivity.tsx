@@ -94,9 +94,6 @@ export default function GitHubActivity() {
     staleTime: 1000 * 60 * 60,
   })
 
-  const hasData = !isLoading && !isError && data && data.length > 0
-
-  // Render nothing if fetch failed and not loading — avoids an empty section
   if (!isLoading && (isError || !data || data.length === 0)) return null
 
   return (

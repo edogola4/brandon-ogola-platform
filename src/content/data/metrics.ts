@@ -21,8 +21,8 @@ export const METRICS: MetricCardProps[] = [
   },
   {
     label: 'Payment integrations shipped',
-    value: '3',
-    context: 'M-Pesa, Pesapal, Stripe',
+    value: '2',
+    context: 'M-Pesa STK Push, Pesapal',
     trend: 'neutral'
   }
 ]

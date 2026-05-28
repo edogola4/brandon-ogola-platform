@@ -17,6 +17,9 @@ export default function Hero() {
         <p className="mt-5 text-lg leading-relaxed text-neutral-600">
           {HERO.subtitle}
         </p>
+        <p className="mt-2 text-sm text-neutral-400">
+          {HERO.location}
+        </p>
 
         <div className="mt-8 flex flex-col sm:flex-row gap-3">
           <Button asChild variant="primary" size="lg" className="w-full sm:w-auto justify-center">

@@ -178,6 +178,11 @@ export default function AIAssistant() {
 
         {/* Input row */}
         <div className="px-4 py-3 bg-white border-t border-neutral-100">
+          {!sessionLimitReached && sessionMessageCount >= 7 && (
+            <p className="mb-2 text-xs text-neutral-400 text-center">
+              {10 - sessionMessageCount} message{10 - sessionMessageCount === 1 ? '' : 's'} remaining in this session
+            </p>
+          )}
           <form onSubmit={handleSubmit} className="flex gap-2 items-center">
             <label htmlFor="ai-input" className="sr-only">Message</label>
             <input
