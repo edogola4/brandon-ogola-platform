@@ -29,7 +29,7 @@ export const ENGINEERING_TIMELINE: TimelineEntry[] = [
   {
     period: 'Nov 2024 — Apr 2025',
     role: 'Operations Intern',
-    organisation: 'Alliance Bioversity CIAT',
+    organisation: 'Alliance Bioversity International and CIAT',
     location: 'Nairobi, Kenya',
     type: 'employment'
   },

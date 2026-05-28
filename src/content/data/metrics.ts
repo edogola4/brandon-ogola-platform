@@ -10,7 +10,7 @@ export const METRICS: MetricCardProps[] = [
   {
     label: 'Reduction in manual processing',
     value: '40%',
-    context: 'Alliance Bioversity CIAT, 2025',
+    context: 'Alliance Bioversity International and CIAT, 2025',
     trend: 'up'
   },
   {

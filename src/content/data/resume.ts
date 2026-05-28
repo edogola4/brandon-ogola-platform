@@ -106,7 +106,7 @@ export const EXPERIENCE: ExperienceEntry[] = [
   },
   {
     title: 'Operations Intern',
-    company: 'Alliance Bioversity CIAT',
+    company: 'Alliance Bioversity International and CIAT',
     location: 'Nairobi, Kenya',
     period: 'November 2024 — April 2025',
     achievements: [

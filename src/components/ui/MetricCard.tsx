@@ -24,7 +24,7 @@ export type MetricCardProps = {
  */
 export function MetricCard({ label, value, context, trend = 'neutral' }: MetricCardProps) {
   const trendSymbol = trend === 'up' ? '↑' : trend === 'down' ? '↓' : '—'
-  const trendColor = trend === 'up' ? 'text-emerald-600' : trend === 'down' ? 'text-red-600' : 'text-neutral-700'
+  const trendColor = trend === 'up' ? 'text-neutral-800' : trend === 'down' ? 'text-red-600' : 'text-neutral-700'
 
   return (
     <div className="bg-white border border-neutral-100 rounded-lg p-4">

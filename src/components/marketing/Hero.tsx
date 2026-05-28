@@ -12,7 +12,7 @@ export default function Hero() {
         <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">{HERO.title}</h1>
         <p className="mt-4 text-lg text-neutral-700">{HERO.subtitle}</p>
 
-        <div className="mt-6 flex gap-3">
+        <div className="mt-6 flex flex-col sm:flex-row gap-3 sm:items-center">
           <Button asChild variant="primary">
             <Link href={HERO.primaryCta.href} className="inline-block">{HERO.primaryCta.label}</Link>
           </Button>
