@@ -78,9 +78,9 @@ export default function ContactForm() {
 
   if (success) {
     return (
-      <div>
-        <h1 className="text-2xl font-semibold">Thanks for reaching out.</h1>
-        <p className="mt-4 text-gray-700">I'll be in touch within 2 business days.</p>
+      <div className="mt-8 max-w-2xl rounded-md border border-neutral-200 bg-neutral-50 px-6 py-8" role="status" aria-live="polite">
+        <p className="text-lg font-semibold text-neutral-900">Thanks for reaching out.</p>
+        <p className="mt-2 text-sm text-neutral-600">I'll review your inquiry and be in touch within 2 business days.</p>
       </div>
     )
   }
