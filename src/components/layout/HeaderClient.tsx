@@ -1,57 +1,74 @@
 'use client'
 
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-/**
- * Client component handling scroll state and mobile navigation.
- */
+const NAV_LINKS: Array<{ label: string; href: string }> = [
+  { label: 'Home', href: '/' },
+  { label: 'Case Studies', href: '/case-studies' },
+  { label: 'Services', href: '/services' },
+  { label: 'Writing', href: '/writing' },
+  { label: 'Resume', href: '/resume' },
+  { label: 'Contact', href: '/contact' },
+]
+
 export default function HeaderClient() {
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
-  const panelRef = useRef<HTMLDivElement | null>(null)
 
+  // Apply scroll backdrop directly onto the server-rendered backdrop div
   useEffect(() => {
+    const backdrop = document.getElementById('header-backdrop')
     function onScroll() {
-      setScrolled(window.scrollY > 8)
+      const isScrolled = window.scrollY > 8
+      setScrolled(isScrolled)
+      if (backdrop) {
+        backdrop.className = isScrolled
+          ? 'absolute inset-0 -z-10 transition-all duration-200 bg-white/90 backdrop-blur-sm border-b border-neutral-200'
+          : 'absolute inset-0 -z-10 transition-all duration-200'
+      }
     }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Close mobile menu on Escape
   useEffect(() => {
+    if (!open) return
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') setOpen(false)
     }
-    if (open) window.addEventListener('keydown', onKey)
+    window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [open])
 
-  function handleLinkClick() {
+  // Close mobile menu on route change
+  useEffect(() => {
     setOpen(false)
-  }
+  }, [pathname])
 
-  const navLinks: Array<{ label: string; href: string }> = [
-    { label: 'Home', href: '/' },
-    { label: 'Case Studies', href: '/case-studies' },
-    { label: 'Services', href: '/services' },
-    { label: 'Writing', href: '/writing' },
-    { label: 'Resume', href: '/resume' },
-    { label: 'Contact', href: '/contact' }
-  ]
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [open])
 
   return (
-    <nav className="flex items-center gap-4">
+    <nav aria-label="Site navigation" className="flex items-center gap-4">
       {/* Desktop links */}
       <ul className="hidden md:flex items-center gap-6">
-        {navLinks.map((link) => (
+        {NAV_LINKS.map((link) => (
           <li key={link.href}>
             <Link
               href={link.href}
-              className={`text-sm ${pathname === link.href ? 'font-semibold' : 'font-normal'}`}
+              className={`text-sm transition-colors ${
+                pathname === link.href
+                  ? 'font-semibold text-neutral-900'
+                  : 'font-normal text-neutral-600 hover:text-neutral-900'
+              }`}
               aria-current={pathname === link.href ? 'page' : undefined}
             >
               {link.label}
@@ -60,27 +77,45 @@ export default function HeaderClient() {
         ))}
       </ul>
 
-      {/* Mobile menu */}
-      <div className="md:hidden">
-        <button
-          type="button"
-          className="text-sm font-medium"
-          aria-expanded={open}
-          aria-controls="mobile-menu"
-          onClick={() => setOpen((s) => !s)}
-        >
-          {open ? 'Close' : 'Menu'}
-        </button>
-        {open && (
-          <div id="mobile-menu" ref={panelRef} className={`mt-2 w-screen left-0 right-0 bg-white shadow-sm` }>
-            <ul className="flex flex-col p-4 gap-3">
-              {navLinks.map((link) => (
+      {/* Mobile menu toggle */}
+      <button
+        type="button"
+        className="md:hidden text-sm font-medium text-neutral-700 hover:text-neutral-900"
+        aria-expanded={open}
+        aria-controls="mobile-menu"
+        aria-label={open ? 'Close navigation menu' : 'Open navigation menu'}
+        onClick={() => setOpen((s) => !s)}
+      >
+        {open ? 'Close' : 'Menu'}
+      </button>
+
+      {/* Mobile menu overlay */}
+      {open && (
+        <>
+          {/* Backdrop */}
+          <div
+            aria-hidden="true"
+            className="fixed inset-0 top-16 z-30 bg-black/20"
+            onClick={() => setOpen(false)}
+          />
+          {/* Panel */}
+          <div
+            id="mobile-menu"
+            role="dialog"
+            aria-label="Navigation menu"
+            className="fixed top-16 left-0 right-0 z-40 bg-white border-b border-neutral-200 shadow-sm"
+          >
+            <ul className="flex flex-col px-4 py-3 gap-1">
+              {NAV_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className={`block text-base ${pathname === link.href ? 'font-semibold' : 'font-normal'}`}
+                    className={`block py-2 text-base ${
+                      pathname === link.href
+                        ? 'font-semibold text-neutral-900'
+                        : 'font-normal text-neutral-600'
+                    }`}
                     aria-current={pathname === link.href ? 'page' : undefined}
-                    onClick={handleLinkClick}
                   >
                     {link.label}
                   </Link>
@@ -88,11 +123,8 @@ export default function HeaderClient() {
               ))}
             </ul>
           </div>
-        )}
-      </div>
-
-      {/* Scroll state indicator applied as backdrop on small inner wrapper via aria-hidden element */}
-      <div aria-hidden className={`${scrolled ? 'backdrop-blur-sm border-b border-neutral-200 bg-white/60' : 'bg-transparent' } hidden md:block absolute inset-x-0 top-0 h-0`} />
+        </>
+      )}
     </nav>
   )
 }
