@@ -1,5 +1,6 @@
 import { Pool } from 'pg'
 import { generateEmbedding } from './openai'
+import logger from './logger'
 
 export interface SearchResult {
   title: string
@@ -54,7 +55,7 @@ export async function semanticSearch(query: string): Promise<SearchResult[]> {
 
     return results
   } catch (err) {
-    // On any error, return empty array per constraints
+    logger.error({ err }, 'semantic search failed')
     return []
   }
 }

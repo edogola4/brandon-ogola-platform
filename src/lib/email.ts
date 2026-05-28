@@ -1,5 +1,6 @@
 import sgMail from '@sendgrid/mail'
 import type { ContactFormData } from './schemas/contact'
+import logger from './logger'
 
 const ADMIN_EMAIL = 'edogola4@gmail.com'
 
@@ -10,7 +11,7 @@ function getSendGridKey(): string | undefined {
 export async function sendInquiryNotification(data: ContactFormData): Promise<void> {
   const key = getSendGridKey()
   if (!key) {
-    console.warn('SENDGRID_API_KEY not set; skipping notification email')
+    logger.warn('SENDGRID_API_KEY not set — skipping notification email')
     return
   }
   try {
@@ -35,14 +36,14 @@ export async function sendInquiryNotification(data: ContactFormData): Promise<vo
       text: bodyLines.join('\n'),
     })
   } catch (e) {
-    console.warn('Failed to send notification email', e)
+    logger.error({ err: e }, 'failed to send inquiry notification email')
   }
 }
 
 export async function sendInquiryAcknowledgement(data: ContactFormData): Promise<void> {
   const key = getSendGridKey()
   if (!key) {
-    console.warn('SENDGRID_API_KEY not set; skipping acknowledgement email')
+    logger.warn('SENDGRID_API_KEY not set — skipping acknowledgement email')
     return
   }
   try {
@@ -56,6 +57,6 @@ export async function sendInquiryAcknowledgement(data: ContactFormData): Promise
       text: body,
     })
   } catch (e) {
-    console.warn('Failed to send acknowledgement email', e)
+    logger.error({ err: e }, 'failed to send inquiry acknowledgement email')
   }
 }

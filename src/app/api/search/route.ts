@@ -1,6 +1,8 @@
 import { semanticSearch } from '@/lib/search'
+import logger from '@/lib/logger'
+import { withApiLogger } from '@/lib/api-logger'
 
-export async function GET(req: Request) {
+async function handler(req: Request): Promise<Response> {
   try {
     const url = new URL(req.url)
     const q = url.searchParams.get('q') ?? ''
@@ -20,16 +22,19 @@ export async function GET(req: Request) {
     }
 
     const results = await semanticSearch(q)
+    logger.info({ queryLength: q.length, resultCount: results.length }, 'semantic search completed')
 
     return new Response(JSON.stringify(results), {
       status: 200,
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
     })
   } catch (err) {
-    // Never expose raw errors; return empty array to keep API stable
+    logger.error({ err }, 'unhandled error in /api/search')
     return new Response(JSON.stringify([]), {
       status: 200,
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
     })
   }
 }
+
+export const GET = withApiLogger('/api/search', handler)

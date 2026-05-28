@@ -1,4 +1,6 @@
 import type { NextRequest } from 'next/server'
+import logger from '../../../lib/logger'
+import { withApiLogger } from '../../../lib/api-logger'
 
 type AllowedType = 'PushEvent' | 'CreateEvent' | 'PullRequestEvent'
 
@@ -24,7 +26,7 @@ function apiCommitUrlToHtml(apiUrl: string): string {
   }
 }
 
-export async function GET(request: Request) {
+async function handler(request: Request): Promise<Response> {
   // Only allow GET
   if (request.method !== 'GET') {
     return new Response(null, { status: 405, headers: { Allow: 'GET' } })
@@ -32,6 +34,7 @@ export async function GET(request: Request) {
 
   const token = process.env.GITHUB_TOKEN
   if (!token) {
+    logger.warn('GITHUB_TOKEN not configured — returning empty activity feed')
     return new Response(JSON.stringify([]), {
       status: 200,
       headers: {
@@ -47,6 +50,7 @@ export async function GET(request: Request) {
     })
 
     if (res.status === 403) {
+      logger.warn({ status: 403 }, 'github api rate limited or forbidden')
       return new Response(JSON.stringify([]), {
         status: 200,
         headers: {
@@ -57,6 +61,7 @@ export async function GET(request: Request) {
     }
 
     if (!res.ok) {
+      logger.warn({ status: res.status }, 'github api returned non-ok response')
       return new Response(JSON.stringify([]), {
         status: 200,
         headers: {
@@ -110,6 +115,7 @@ export async function GET(request: Request) {
       })
 
     const result = filtered.slice(0, 10)
+    logger.info({ eventCount: result.length }, 'github activity fetched')
 
     return new Response(JSON.stringify(result), {
       status: 200,
@@ -119,6 +125,7 @@ export async function GET(request: Request) {
       },
     })
   } catch (e) {
+    logger.error({ err: e }, 'unhandled error in /api/github')
     return new Response(JSON.stringify([]), {
       status: 200,
       headers: {
@@ -128,3 +135,5 @@ export async function GET(request: Request) {
     })
   }
 }
+
+export const GET = withApiLogger('/api/github', handler)

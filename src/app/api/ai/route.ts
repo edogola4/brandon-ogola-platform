@@ -1,4 +1,6 @@
 import { anthropic, ASSISTANT_SYSTEM_PROMPT } from '@/lib/anthropic'
+import logger from '@/lib/logger'
+import { withApiLogger } from '@/lib/api-logger'
 
 type Role = 'user' | 'assistant'
 
@@ -20,7 +22,7 @@ async function hashString(input: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
-export async function POST(request: Request) {
+async function handler(request: Request): Promise<Response> {
   if (request.method !== 'POST') {
     return new Response(null, { status: 405 })
   }
@@ -49,6 +51,7 @@ export async function POST(request: Request) {
     const entry = rateLimitMap.get(key)
     if (entry && entry.resetAt > now) {
       if (entry.count >= DAILY_LIMIT) {
+        logger.warn({ route: '/api/ai' }, 'daily rate limit reached')
         return Response.json({ error: 'Daily message limit reached. Email edogola4@gmail.com for direct contact.' }, { status: 429 })
       }
     } else if (!entry || entry.resetAt <= now) {
@@ -86,6 +89,7 @@ export async function POST(request: Request) {
 
     // Guard: no API key configured
     if (!process.env.ANTHROPIC_API_KEY) {
+      logger.warn('ANTHROPIC_API_KEY not configured — returning fallback response')
       return new Response("AI assistant is not configured. Email edogola4@gmail.com directly.", {
         status: 200,
         headers: { 'Content-Type': 'text/plain; charset=utf-8' },
@@ -119,9 +123,8 @@ export async function POST(request: Request) {
               }
             }
             controller.close()
-          } catch {
-            // Encode the error as text into the stream so the client receives
-            // a readable message rather than a broken stream
+          } catch (streamErr) {
+            logger.error({ err: streamErr }, 'anthropic stream error')
             controller.enqueue(
               new TextEncoder().encode(
                 "I'm having trouble responding right now. Email edogola4@gmail.com directly."
@@ -138,14 +141,17 @@ export async function POST(request: Request) {
           'Transfer-Encoding': 'chunked',
         },
       })
-    } catch {
+    } catch (err) {
+      logger.error({ err }, 'anthropic stream initialisation error')
       return new Response(
         "I'm having trouble responding right now. Email edogola4@gmail.com directly.",
         { status: 200, headers: { 'Content-Type': 'text/plain; charset=utf-8' } }
       )
     }
   } catch (err) {
-    // Never return 500
+    logger.error({ err }, 'unhandled error in /api/ai')
     return new Response("I'm having trouble responding right now. Please email edogola4@gmail.com directly.", { status: 200, headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
   }
 }
+
+export const POST = withApiLogger('/api/ai', handler)

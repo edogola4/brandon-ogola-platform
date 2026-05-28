@@ -1,4 +1,6 @@
 import { contactSchema, type ContactFormData } from '../../../lib/schemas/contact'
+import logger from '../../../lib/logger'
+import { withApiLogger } from '../../../lib/api-logger'
 
 // Simple in-memory rate limit store. TODO: replace with Redis or Vercel KV for multi-instance deployments
 const RATE_LIMIT_MAP = new Map<string, { count: number; resetAt: number }>()
@@ -24,7 +26,7 @@ function jsonResponse(obj: unknown, status = 200, extraHeaders: Record<string, s
   })
 }
 
-export async function POST(request: Request) {
+async function handler(request: Request): Promise<Response> {
   if (request.method !== 'POST') {
     return new Response(null, { status: 405, headers: { Allow: 'POST' } })
   }
@@ -44,6 +46,7 @@ export async function POST(request: Request) {
     } else {
       if (entry.count >= LIMIT) {
         const retryAfterSec = Math.ceil((entry.resetAt - now) / 1000)
+        logger.warn({ route: '/api/contact' }, 'contact rate limit reached')
         return jsonResponse({ error: 'Too many requests', retryAfter: retryAfterSec }, 429)
       }
       RATE_LIMIT_MAP.set(hashedIp, { count: entry.count + 1, resetAt: entry.resetAt })
@@ -53,6 +56,7 @@ export async function POST(request: Request) {
     const parsed = contactSchema.safeParse(body)
     if (!parsed.success) {
       const flattened = parsed.error.flatten()
+      logger.warn({ route: '/api/contact', fieldErrors: Object.keys(flattened.fieldErrors) }, 'contact form validation failed')
       return jsonResponse({ errors: flattened }, 422)
     }
 
@@ -62,13 +66,16 @@ export async function POST(request: Request) {
     import('../../../lib/email').then(async (mod) => {
       const { sendInquiryNotification, sendInquiryAcknowledgement } = mod
       await Promise.allSettled([sendInquiryNotification(data), sendInquiryAcknowledgement(data)])
-    }).catch(() => {
-      // swallow import errors — email is non-fatal
+    }).catch((err) => {
+      logger.error({ err }, 'failed to import email module')
     })
 
+    logger.info({ route: '/api/contact', projectType: data.projectType }, 'inquiry received')
     return jsonResponse({ id: crypto.randomUUID(), message: 'Inquiry received' }, 201)
   } catch (e) {
-    // Never return 500 from this route
+    logger.error({ err: e }, 'unhandled error in /api/contact')
     return jsonResponse({ error: 'Something went wrong' }, 200)
   }
 }
+
+export const POST = withApiLogger('/api/contact', handler)
