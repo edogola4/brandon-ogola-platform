@@ -69,12 +69,13 @@ export default function Search() {
                 <ul role="list">
                   {results.map((r) => (
                     <li key={`${r.contentType}-${r.slug}`} role="listitem" className="mb-3">
-                      <Link href={r.contentType === 'article' ? `/writing/${r.slug}` : `/case-studies/${r.slug}`}>
-                        <a className="block">
-                          <div className="font-medium">{r.title}</div>
-                          <div className="text-sm text-muted-foreground">{r.contentType === 'article' ? 'Article' : 'Case Study'}</div>
-                          <div className="text-sm">{r.excerpt.slice(0, 120)}</div>
-                        </a>
+                      <Link
+                        href={r.contentType === 'article' ? `/writing/${r.slug}` : `/case-studies/${r.slug}`}
+                        className="block hover:underline"
+                      >
+                        <div className="font-medium">{r.title}</div>
+                        <div className="text-sm text-neutral-500">{r.contentType === 'article' ? 'Article' : 'Case Study'}</div>
+                        <div className="text-sm text-neutral-600">{r.excerpt.slice(0, 120)}</div>
                       </Link>
                     </li>
                   ))}

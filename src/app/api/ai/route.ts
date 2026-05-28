@@ -1,6 +1,7 @@
 import { anthropic, ASSISTANT_SYSTEM_PROMPT } from '@/lib/anthropic'
 import logger from '@/lib/logger'
 import { withApiLogger } from '@/lib/api-logger'
+import type { MessageParam } from '@anthropic-ai/sdk/resources/messages'
 
 type Role = 'user' | 'assistant'
 
@@ -97,11 +98,10 @@ async function handler(request: Request): Promise<Response> {
     }
 
     // Map messages to Anthropic MessageParam shape
-    const anthroMessages = messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
+    const anthroMessages: MessageParam[] = messages.map((m) => ({ role: m.role, content: m.content }))
 
     // Call Anthropic streaming API
     try {
-      // @ts-ignore - SDK types are strict; runtime shape matches expected MessageParam
       const stream = anthropic.messages.stream({
         model: 'claude-haiku-4-5',
         max_tokens: 500,

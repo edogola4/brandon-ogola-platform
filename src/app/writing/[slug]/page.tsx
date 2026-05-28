@@ -12,7 +12,7 @@ import { generatePageMetadata } from '../../../lib/metadata'
 import { articleSchema } from '../../../lib/schema'
 import { formatDate } from '../../../lib/content-utils'
 
-type Params = { params: { slug: string } }
+type Params = { params: Promise<{ slug: string }> }
 // Derive the rehypePlugins type from MDXRemote's own options prop — no subpath import needed.
 type MDXOptions = NonNullable<React.ComponentProps<typeof MDXRemote>['options']>['mdxOptions']
 type RehypePlugins = NonNullable<NonNullable<MDXOptions>['rehypePlugins']>
@@ -28,13 +28,14 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const art = await getArticle(params.slug)
+  const { slug } = await params
+  const art = await getArticle(slug)
   if (!art) return {}
   const fm = art.frontmatter
   const base = generatePageMetadata({
     title: fm.title,
     description: fm.description,
-    path: `/writing/${params.slug}`,
+    path: `/writing/${slug}`,
     ogType: 'article',
     publishedTime: fm.date,
     tags: fm.tags ?? [],
@@ -46,14 +47,15 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default async function ArticlePage({ params }: Params) {
-  const art = await getArticle(params.slug)
+  const { slug } = await params
+  const art = await getArticle(slug)
   if (!art) notFound()
   const fm = art.frontmatter
   const jsonLd = articleSchema({
     title: fm.title,
     description: fm.description,
     date: fm.date,
-    url: `https://brandonogola.dev/writing/${params.slug}`,
+    url: `https://brandonogola.dev/writing/${slug}`,
   })
 
   return (

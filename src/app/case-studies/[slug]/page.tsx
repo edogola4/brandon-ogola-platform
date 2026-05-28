@@ -7,7 +7,7 @@ import { Tag, Badge } from '../../../components/ui'
 import { generatePageMetadata } from '../../../lib/metadata'
 import { formatDate, formatStatus } from '../../../lib/content-utils'
 
-type Params = { params: { slug: string } }
+type Params = { params: Promise<{ slug: string }> }
 
 export async function generateStaticParams() {
   const all = await getAllCaseStudies()
@@ -15,13 +15,14 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Params) {
-  const cs = await getCaseStudy(params.slug)
+  const { slug } = await params
+  const cs = await getCaseStudy(slug)
   if (!cs) return {}
   const fm = cs.frontmatter
   return generatePageMetadata({
     title: fm.title,
     description: fm.summary,
-    path: `/case-studies/${params.slug}`,
+    path: `/case-studies/${slug}`,
     ogType: 'article',
     publishedTime: fm.date,
     tags: fm.tags ?? [],
@@ -29,7 +30,8 @@ export async function generateMetadata({ params }: Params) {
 }
 
 export default async function CaseStudyPage({ params }: Params) {
-  const cs = await getCaseStudy(params.slug)
+  const { slug } = await params
+  const cs = await getCaseStudy(slug)
   if (!cs) notFound()
   const fm = cs.frontmatter
   const { label, variant } = formatStatus(fm.status)

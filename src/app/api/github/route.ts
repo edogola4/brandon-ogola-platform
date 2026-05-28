@@ -4,11 +4,18 @@ import { withApiLogger } from '../../../lib/api-logger'
 
 type AllowedType = 'PushEvent' | 'CreateEvent' | 'PullRequestEvent'
 
+type RawEventPayload = {
+  commits?: Array<{ message?: string; url?: string }>
+  head?: string
+  ref?: string
+  pull_request?: { title?: string; html_url?: string }
+}
+
 type RawEvent = {
   id: string
   type: string
   repo: { name: string }
-  payload?: any
+  payload?: RawEventPayload
   created_at: string
 }
 

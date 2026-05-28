@@ -34,7 +34,10 @@ export async function getAllCaseStudies(): Promise<CaseStudyFrontmatter[]> {
 }
 
 export async function getCaseStudy(slug: string): Promise<{ frontmatter: CaseStudyFrontmatter; content: string } | null> {
-  const filePath = path.join(CASE_STUDIES_DIR, `${slug}.mdx`)
+  if (!slug || typeof slug !== 'string') return null
+  const safeSlug = path.basename(slug)
+  if (!safeSlug || safeSlug.includes('..')) return null
+  const filePath = path.join(CASE_STUDIES_DIR, `${safeSlug}.mdx`)
   if (!fs.existsSync(filePath)) return null
   const raw = fs.readFileSync(filePath, 'utf-8')
   const parsed = matter(raw)
@@ -60,7 +63,10 @@ export async function getAllArticles(): Promise<ArticleFrontmatter[]> {
 }
 
 export async function getArticle(slug: string): Promise<{ frontmatter: ArticleFrontmatter; content: string } | null> {
-  const filePath = path.join(WRITING_DIR, `${slug}.mdx`)
+  if (!slug || typeof slug !== 'string') return null
+  const safeSlug = path.basename(slug)
+  if (!safeSlug || safeSlug.includes('..')) return null
+  const filePath = path.join(WRITING_DIR, `${safeSlug}.mdx`)
   if (!fs.existsSync(filePath)) return null
   const raw = fs.readFileSync(filePath, 'utf-8')
   const parsed = matter(raw)

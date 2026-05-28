@@ -7,12 +7,18 @@ export type RouteHandler = (req: Request) => Promise<Response>
  * Attaches a requestId, route label, method, status code, and duration to every entry.
  * Errors are logged at error level; all other outcomes at info level.
  */
+/** Strip newlines and control characters from a string before logging to prevent log injection */
+function sanitiseForLog(value: string): string {
+  return value.replace(/[\r\n\t\x00-\x1f\x7f]/g, '_')
+}
+
 export function withApiLogger(route: string, handler: RouteHandler): RouteHandler {
   return async (req: Request): Promise<Response> => {
     const requestId = crypto.randomUUID().slice(0, 8)
-    const method = req.method
+    const method = sanitiseForLog(req.method)
+    const safeRoute = sanitiseForLog(route)
     const start = Date.now()
-    const log = logger.child({ requestId, route, method })
+    const log = logger.child({ requestId, route: safeRoute, method })
 
     log.info('request received')
 
