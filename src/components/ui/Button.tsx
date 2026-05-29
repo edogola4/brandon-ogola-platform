@@ -20,7 +20,7 @@ export type ButtonProps = {
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:     'bg-accent-600 text-white hover:bg-accent-700 focus-visible:ring-accent-500',
   secondary:   'bg-neutral-100 text-neutral-900 hover:bg-neutral-200 focus-visible:ring-neutral-300',
-  ghost:       'bg-transparent text-accent-600 border border-accent-600 hover:bg-neutral-50 focus-visible:ring-accent-200',
+  ghost: 'bg-transparent text-neutral-700 border border-neutral-300 hover:border-neutral-500 hover:text-neutral-900 focus-visible:ring-neutral-300',
   destructive: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500',
 }
 

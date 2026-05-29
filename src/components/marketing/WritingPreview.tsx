@@ -27,8 +27,8 @@ export default async function WritingPreview() {
         </Link>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-        {items.slice(0, 2).map((a) => (
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        {items.slice(0, 3).map((a) => (
           <article
             key={a.slug}
             className="border border-neutral-200 rounded-lg p-5 flex flex-col gap-3 hover:border-neutral-400 transition-colors"

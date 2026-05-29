@@ -5,12 +5,9 @@ export default function AvailabilityCTA() {
   return (
     <section aria-labelledby="cta-heading" className="max-w-6xl mx-auto px-4 py-16 border-t border-neutral-100">
       <div className="max-w-2xl">
-        <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
-          Available now
-        </p>
         <h2
           id="cta-heading"
-          className="mt-3 text-2xl font-semibold text-neutral-900"
+          className="text-2xl font-semibold text-neutral-900"
         >
           Looking for a contract engineer?
         </h2>

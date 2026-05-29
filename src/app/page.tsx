@@ -27,8 +27,6 @@ export default function Page() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema()) }}
       />
 
-      <AIAssistant />
-
       <Hero />
 
       <TrustMarquee />
@@ -44,6 +42,8 @@ export default function Page() {
       <GitHubActivity />
 
       <AvailabilityCTA />
+
+      <AIAssistant />
     </>
   )
 }

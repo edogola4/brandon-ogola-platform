@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { usePathname } from 'next/navigation'
 
 type Role = 'user' | 'assistant'
 type ChatMessage = { id: string; role: Role; content: string }
@@ -10,6 +11,8 @@ function makeId() {
 }
 
 export default function AIAssistant() {
+  const pathname = usePathname()
+  const isHome = pathname === '/'
   const [open, setOpen] = React.useState(false)
   const [messages, setMessages] = React.useState<ChatMessage[]>([
     { id: 'init', role: 'assistant', content: "Ask me anything about Brandon's engineering work, projects, or availability." },
@@ -125,16 +128,18 @@ export default function AIAssistant() {
 
   return (
     <>
-      {/* Fixed vertical tab trigger */}
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label="Open AI assistant"
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-neutral-900 text-white text-xs font-medium tracking-widest uppercase px-2 py-4 rounded-l-md hover:bg-neutral-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
-        style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
-      >
-        Ask a question
-      </button>
+      {/* Fixed vertical tab trigger — homepage only */}
+      {isHome && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Open AI assistant"
+          className="fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-neutral-900 text-white text-xs font-medium tracking-widest uppercase px-2 py-4 rounded-l-md hover:bg-neutral-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
+          style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+        >
+          Ask a question
+        </button>
+      )}
 
       {/* Backdrop */}
       {open && (
