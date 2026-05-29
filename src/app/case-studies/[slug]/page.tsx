@@ -3,6 +3,7 @@ import { getAllCaseStudies, getCaseStudy } from '../../../lib/mdx'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { MDXRemote } from 'next-mdx-remote/rsc'
+import remarkGfm from 'remark-gfm'
 import MDX_COMPONENTS from '../../../lib/mdx-components'
 import { Tag, Badge } from '../../../components/ui'
 import { generatePageMetadata } from '../../../lib/metadata'
@@ -120,7 +121,11 @@ export default async function CaseStudyPage({ params }: Params) {
 
       {/* Body */}
       <article className="mt-8 mdx-body">
-        <MDXRemote source={cs.content} components={MDX_COMPONENTS} />
+        <MDXRemote
+          source={cs.content}
+          components={MDX_COMPONENTS}
+          options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+        />
       </article>
 
       {/* Prev / Next navigation */}

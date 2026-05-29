@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import rehypePrettyCode from 'rehype-pretty-code'
 import rehypeSlug from 'rehype-slug'
+import remarkGfm from 'remark-gfm'
 import type { Metadata } from 'next'
 import { getAllArticles, getArticle } from '../../../lib/mdx'
 import MDX_COMPONENTS from '../../../lib/mdx-components'
@@ -21,6 +22,8 @@ const REHYPE_PLUGINS: RehypePlugins = [
   rehypeSlug,
   [rehypePrettyCode, { theme: 'github-light', keepBackground: false }],
 ]
+
+const REMARK_PLUGINS = [remarkGfm]
 
 export async function generateStaticParams() {
   const all = await getAllArticles()
@@ -86,7 +89,7 @@ export default async function ArticlePage({ params }: Params) {
         <MDXRemote
           source={art.content}
           components={MDX_COMPONENTS}
-          options={{ mdxOptions: { rehypePlugins: REHYPE_PLUGINS } }}
+          options={{ mdxOptions: { remarkPlugins: REMARK_PLUGINS, rehypePlugins: REHYPE_PLUGINS } }}
         />
       </article>
 
