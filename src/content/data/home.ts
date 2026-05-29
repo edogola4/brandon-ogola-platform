@@ -1,5 +1,5 @@
 export const HERO = {
-  name: 'Brandon Ogola',
+  
   title: 'Full-Stack Software Developer',
   subtitle:
     'I build backend APIs, full-stack SaaS products, and AI-integrated systems for companies that need production-grade engineering without the overhead of a full-time hire. Specialising in Azure infrastructure and African payment systems.',
