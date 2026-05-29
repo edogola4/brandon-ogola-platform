@@ -20,7 +20,8 @@ import { generatePageMetadata } from '../../lib/metadata'
 export function generateMetadata() {
   return generatePageMetadata({
     title: 'Resume',
-    description: 'Full-stack software engineer resume — 2+ years delivering production systems in fintech, healthcare, and SaaS. Based in Nairobi, Kenya.',
+    description:
+      'Resume of Brandon Ogola — full-stack software engineer with experience in ASP.NET Core, Next.js, Azure, M-Pesa integrations, and AI features. Based in Nairobi, Kenya.',
     path: '/resume',
   })
 }

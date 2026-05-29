@@ -9,7 +9,8 @@ import { CASE_STUDIES_PAGE } from '../../content/data/home'
 export function generateMetadata() {
   return generatePageMetadata({
     title: 'Case Studies',
-    description: 'Engineering case studies covering SaaS architecture, AI integrations, fintech systems, and cloud infrastructure.',
+    description:
+      'Engineering case studies from production systems: M-Pesa e-commerce, healthcare SaaS on Azure, and enterprise automation. Architecture decisions, implementation details, and measured outcomes.',
     path: '/case-studies',
   })
 }

@@ -12,7 +12,8 @@ import {
 export function generateMetadata() {
   return generatePageMetadata({
     title: 'About',
-    description: 'Full-stack software engineer based in Nairobi, Kenya. 2+ years delivering production systems in fintech, healthcare, and SaaS.',
+    description:
+      'Brandon Ogola is a full-stack software engineer based in Nairobi, Kenya with 2+ years shipping production systems across fintech, healthcare SaaS, and enterprise automation.',
     path: '/about',
   })
 }

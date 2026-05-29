@@ -6,7 +6,8 @@ import { generatePageMetadata } from '../../lib/metadata'
 export function generateMetadata() {
   return generatePageMetadata({
     title: 'Contact',
-    description: 'Get in touch to discuss a contract or freelance software engineering engagement.',
+    description:
+      'Get in touch to discuss a software engineering engagement or opportunity. Backend APIs, full-stack SaaS, AI integrations, and Azure infrastructure. Based in Nairobi, Kenya.',
     path: '/contact',
   })
 }

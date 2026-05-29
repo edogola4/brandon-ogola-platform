@@ -9,7 +9,8 @@ import { WRITING_PAGE } from '../../content/data/home'
 export function generateMetadata() {
   return generatePageMetadata({
     title: 'Writing',
-    description: 'Technical articles on backend engineering, AI integrations, cloud infrastructure, and system design.',
+    description:
+      'Technical articles on M-Pesa STK Push integration, pgvector semantic search, AI features in production, and cloud infrastructure — from systems that are actually running.',
     path: '/writing',
   })
 }

@@ -14,7 +14,8 @@ import { generatePageMetadata } from '../lib/metadata'
 export function generateMetadata() {
   return generatePageMetadata({
     title: 'Brandon Ogola — Full-Stack Software Engineer',
-    description: 'Full-stack software engineer based in Nairobi, Kenya. Specialising in SaaS systems, AI integrations, and cloud-native infrastructure.',
+    description:
+      'Full-stack software engineer based in Nairobi, Kenya. Building backend APIs, SaaS products, and AI-integrated systems. Experienced in Azure, M-Pesa integrations, and cloud-native infrastructure.',
     path: '/',
   })
 }

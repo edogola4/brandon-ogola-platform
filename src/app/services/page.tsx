@@ -26,7 +26,7 @@ export function generateMetadata() {
   return generatePageMetadata({
     title: 'Services',
     description:
-      'Contract and freelance software engineering engagements — backend APIs, full-stack SaaS builds, AI integrations, and cloud infrastructure.',
+      'Software engineering services: backend APIs with ASP.NET Core, full-stack SaaS with Next.js, AI feature integration with Claude and OpenAI, and Azure cloud infrastructure.',
     path: '/services',
   })
 }

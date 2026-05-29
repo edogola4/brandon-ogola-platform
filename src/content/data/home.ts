@@ -1,9 +1,9 @@
 export const HERO = {
-  
-  title: 'Full-Stack Software Developer',
+  name: 'Brandon Ogola',
+  title: 'Full-Stack Software Engineer',
   subtitle:
-    'I build backend APIs, full-stack SaaS products, and AI-integrated systems for companies that need production-grade engineering without the overhead of a full-time hire. Specialising in Azure infrastructure and African payment systems.',
-  location: 'Nairobi, Kenya · Remote-first · Available for contract engagements.',
+    'I build backend APIs, full-stack SaaS products, and AI-integrated systems. Experienced in Azure infrastructure and African payment systems (M-Pesa, Pesapal). Based in Nairobi, Kenya.',
+  location: 'Nairobi, Kenya · Open to remote and on-site engagements.',
   primaryCta: { href: '/case-studies', label: 'View case studies' },
   secondaryCta: { href: '/contact', label: 'Start a conversation' },
 }
