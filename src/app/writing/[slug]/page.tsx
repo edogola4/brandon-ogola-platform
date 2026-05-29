@@ -68,6 +68,19 @@ export default async function ArticlePage({ params }: Params) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
+      {/* Back nav */}
+      <nav aria-label="Breadcrumb" className="mb-6">
+        <Link
+          href="/writing"
+          className="inline-flex items-center gap-1.5 text-sm text-neutral-400 hover:text-neutral-900 transition-colors"
+        >
+          <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Writing
+        </Link>
+      </nav>
+
       <div className="border-b border-neutral-100 pb-8">
         <h1 className="text-3xl font-bold leading-snug">{fm.title}</h1>
         <p className="mt-4 text-neutral-600 leading-relaxed">{fm.description}</p>
@@ -95,11 +108,11 @@ export default async function ArticlePage({ params }: Params) {
 
       <nav
         aria-label="Article navigation"
-        className="mt-12 pt-8 border-t border-neutral-100"
+        className="mt-12 pt-8 border-t border-neutral-100 flex items-center justify-between gap-4"
       >
         <Link
           href="/writing"
-          className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors inline-flex items-center gap-1.5"
+          className="inline-flex items-center gap-1.5 text-sm text-neutral-400 hover:text-neutral-900 transition-colors"
         >
           <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

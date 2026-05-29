@@ -4,12 +4,22 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
+import rehypePrettyCode from 'rehype-pretty-code'
+import rehypeSlug from 'rehype-slug'
 import MDX_COMPONENTS from '../../../lib/mdx-components'
 import { Tag, Badge } from '../../../components/ui'
 import { generatePageMetadata } from '../../../lib/metadata'
 import { formatDate, formatStatus } from '../../../lib/content-utils'
 
 type Params = { params: Promise<{ slug: string }> }
+type MDXOptions = NonNullable<React.ComponentProps<typeof MDXRemote>['options']>['mdxOptions']
+type RehypePlugins = NonNullable<NonNullable<MDXOptions>['rehypePlugins']>
+
+const REHYPE_PLUGINS: RehypePlugins = [
+  rehypeSlug,
+  [rehypePrettyCode, { theme: 'github-light', keepBackground: false }],
+]
+const REMARK_PLUGINS = [remarkGfm]
 
 export async function generateStaticParams() {
   const all = await getAllCaseStudies()
@@ -124,7 +134,7 @@ export default async function CaseStudyPage({ params }: Params) {
         <MDXRemote
           source={cs.content}
           components={MDX_COMPONENTS}
-          options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+          options={{ mdxOptions: { remarkPlugins: REMARK_PLUGINS, rehypePlugins: REHYPE_PLUGINS } }}
         />
       </article>
 

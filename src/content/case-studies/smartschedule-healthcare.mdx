@@ -21,120 +21,91 @@ outcomes:
 
 ## Status
 
-This case study documents an architecture currently in-development. The work covers the scheduling API design, identity and notification service architectures, HIPAA-focused controls in-scope for the project, and the CI/CD model used to deliver infrastructure and application code. The aim is to capture engineering intent, trade-offs made for an early pilot, and operational guidance for extending the platform.
+This case study documents an architecture in active development. The infrastructure is complete and the core scheduling API is being built. The aim here is to capture the engineering decisions made before a line of application code was written — the architecture, the tradeoffs, and the reasoning — because those decisions are harder to reconstruct after the fact.
 
-## Executive summary
+## The problem
 
-SmartSchedule was designed to replace a manual, WhatsApp-driven appointment flow with a centrally managed scheduling system that combines a scheduling API, an identity service, and a notification service. The platform is intentionally modest in initial scope: the MVP focuses on reliably booking, modifying and cancelling appointments, delivering confirmations via channels already used by clinics, and producing an auditable event log for clinical workflows.
+Most clinics in East Africa coordinate appointments over WhatsApp. This works until it doesn't: a message gets missed, a reschedule isn't tracked, a patient shows up for a cancelled slot. The staff member who knows the schedule is on leave. There's no audit trail, no reminder system, and no visibility into patterns — which patients no-show, which slots are chronically underbooked, which providers are overloaded.
 
-The project emphasises three operational outcomes: a measurable reduction in patient no-shows via automated reminders and predictive nudges; a significant decrease in administrative overhead for clinic staff; and a secure, auditable data path for appointment and patient metadata. The architecture uses managed Azure services for state and backups, a containerised application stack defined by Terraform, and a DevOps flow that enforces infrastructure-as-code and automated quality gates.
+SmartSchedule replaces that with a centralised scheduling system. The MVP scope is deliberately narrow: reliably book, modify, and cancel appointments; deliver confirmations via channels clinics already use; produce an auditable event log. No AI no-show prediction in the MVP — that comes after the core scheduling loop is proven.
 
-## Problem statement
+## Architecture
 
-Many clinics coordinate appointments over informal messaging channels. This creates a fragile operational model: missed messages, untracked reschedules, and limited visibility into patient communication histories. The manual process scales poorly and consumes significant staff time. SmartSchedule addresses these operational gaps by centralising appointment state, automating reminders, and providing staff with an auditable timeline of scheduling events.
+Three services, each with a single responsibility:
 
-Additionally, the solution must treat patient-identifiable information (names, phone numbers, appointment details) as Protected Health Information (PHI). While full HIPAA certification and Business Associate Agreements are out of scope for this pre-launch architecture, the design implements controls intended to reduce risk: encryption at rest and in transit, telemetry scrubbing before it leaves the application, role-based access control, and regionally pinned data residency.
+**Scheduling API** — the core. REST and event interfaces for appointment lifecycle management. Built for idempotency: every mutation is safe to retry. Every state change emits an event to Azure Service Bus for downstream consumers.
 
-## Architecture overview
+**Identity Service** — OAuth2-compatible, supporting Azure AD B2C for clinic staff SSO and a lightweight local provider for patient accounts. Patients shouldn't need an enterprise identity provider to book an appointment.
 
-The platform is composed of three principal services and a small set of infrastructure building blocks:
+**Notification Service** — consumes scheduling events from Service Bus and handles delivery across WhatsApp, SMS, and email with durable fallback semantics. Delivery receipts feed back into the scheduling service for audit purposes.
 
-- Scheduling API (Core): REST and event interfaces for booking, rescheduling, cancelling, and querying appointments. Built for idempotency and auditability.
-- Identity Service: OAuth2-compatible identity provider supporting clinic admin, clinical staff, and patients. Integrates with Azure AD B2C for staff SSO and a lightweight local provider for patient accounts.
-- Notification Service: Responsible for delivery of reminders and confirmations across WhatsApp, SMS, and email with durable fallbacks and delivery receipts.
-
-Infrastructure choices reflect an emphasis on managed services and operational simplicity: Azure App Services / Container Apps host the application services, Azure SQL provides a single primary data store with Transparent Data Encryption enabled, and Azure Storage Accounts hold exported audit logs with blob immutability where required. Terraform drives the entire stack and separates environment state files per environment (dev, staging, prod) — these state files are stored in Azure Storage with blob locking to prevent accidental modifications.
-
-### Inline architecture diagram
-
+<ArchitectureDiagram caption="SmartSchedule service architecture">
 <svg viewBox="0 0 900 360" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SmartSchedule architecture diagram">
   <rect x="20" y="20" width="200" height="80" rx="6" fill="none" stroke="currentColor" strokeWidth="1.2" />
-  <text x="120" y="50" textAnchor="middle" fontSize="12" fill="currentColor">Patient & Staff Clients</text>
+  <text x="120" y="50" textAnchor="middle" fontSize="12" fill="currentColor">Patient &amp; Staff Clients</text>
   <text x="120" y="68" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">(Web, Mobile, WhatsApp)</text>
-
   <rect x="250" y="10" width="200" height="120" rx="6" fill="none" stroke="currentColor" strokeWidth="1.2" />
-  <text x="350" y="35" textAnchor="middle" fontSize="12">Scheduling API</text>
-  <text x="350" y="52" textAnchor="middle" fontSize="10" opacity="0.7">App Service / Container</text>
-
+  <text x="350" y="35" textAnchor="middle" fontSize="12" fill="currentColor">Scheduling API</text>
+  <text x="350" y="52" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">App Service / Container</text>
   <rect x="470" y="10" width="200" height="120" rx="6" fill="none" stroke="currentColor" strokeWidth="1.2" />
-  <text x="570" y="35" textAnchor="middle" fontSize="12">Notification Service</text>
-  <text x="570" y="52" textAnchor="middle" fontSize="10" opacity="0.7">Worker / Background Job</text>
-
+  <text x="570" y="35" textAnchor="middle" fontSize="12" fill="currentColor">Notification Service</text>
+  <text x="570" y="52" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">Worker / Background Job</text>
   <rect x="690" y="10" width="190" height="120" rx="6" fill="none" stroke="currentColor" strokeWidth="1.2" />
-  <text x="785" y="35" textAnchor="middle" fontSize="12">Identity / Auth</text>
-  <text x="785" y="52" textAnchor="middle" fontSize="10" opacity="0.7">Azure AD B2C + Local Provider</text>
-
+  <text x="785" y="35" textAnchor="middle" fontSize="12" fill="currentColor">Identity / Auth</text>
+  <text x="785" y="52" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">Azure AD B2C + Local Provider</text>
   <rect x="300" y="160" width="220" height="90" rx="6" fill="none" stroke="currentColor" strokeWidth="1.2" />
-  <text x="410" y="190" textAnchor="middle" fontSize="12">Azure SQL (TDE)</text>
-  <text x="410" y="208" textAnchor="middle" fontSize="10" opacity="0.7">Appointment store & audit</text>
-
+  <text x="410" y="190" textAnchor="middle" fontSize="12" fill="currentColor">Azure SQL (TDE)</text>
+  <text x="410" y="208" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">Appointment store &amp; audit</text>
   <rect x="550" y="160" width="200" height="90" rx="6" fill="none" stroke="currentColor" strokeWidth="1.2" />
-  <text x="650" y="190" textAnchor="middle" fontSize="12">Redis</text>
-  <text x="650" y="208" textAnchor="middle" fontSize="10" opacity="0.7">Rate limits, locks, sessions</text>
-
+  <text x="650" y="190" textAnchor="middle" fontSize="12" fill="currentColor">Redis</text>
+  <text x="650" y="208" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">Rate limits, locks, sessions</text>
   <rect x="50" y="200" width="220" height="90" rx="6" fill="none" stroke="currentColor" strokeWidth="1.2" />
-  <text x="160" y="230" textAnchor="middle" fontSize="12">Azure Storage</text>
-  <text x="160" y="248" textAnchor="middle" fontSize="10" opacity="0.7">Audit exports, blobs, locked state files</text>
-
+  <text x="160" y="230" textAnchor="middle" fontSize="12" fill="currentColor">Azure Storage</text>
+  <text x="160" y="248" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">Audit exports, blobs, Terraform state</text>
   <line x1="220" y1="60" x2="250" y2="60" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr)" />
   <line x1="450" y1="60" x2="470" y2="60" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr)" />
   <line x1="670" y1="60" x2="690" y2="60" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr)" />
-
   <line x1="350" y1="130" x2="350" y2="160" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr)" />
   <line x1="570" y1="130" x2="570" y2="160" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr)" />
-
   <line x1="420" y1="250" x2="300" y2="250" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr)" />
   <line x1="610" y1="250" x2="550" y2="250" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr)" />
-
   <defs>
     <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
       <path d="M0,0 L0,6 L8,3 z" fill="currentColor" />
     </marker>
   </defs>
 </svg>
+</ArchitectureDiagram>
 
-## HIPAA considerations (design intent)
+## Infrastructure as code from day one
 
-This section outlines the controls implemented as part of the SmartSchedule architecture. It documents design intentions and the in-scope controls for the MVP; a formal HIPAA audit and Business Associate Agreements (BAAs) with cloud providers are not yet complete and therefore full compliance is not claimed.
+The entire stack — three environments (dev, staging, production) — is defined in Terraform before any application code was deployed. Environment state files live in Azure Storage with blob locking to prevent concurrent modifications.
 
-Controls in scope for the architecture:
+The reason for doing this upfront rather than retrofitting it later: retrofitting IaC onto a running system means reconciling manual changes that have drifted from what the code describes. Starting with Terraform means the code is always the source of truth. Running `terraform plan` in CI against staging has already caught two configuration changes that would have caused environment drift.
 
-- **Encryption at rest**: Azure SQL Transparent Data Encryption (TDE) is enabled to protect database backups and stored data.
-- **Encryption in transit**: TLS 1.3 (or TLS 1.2 minimum where required) is enforced at the application perimeter via Azure API Management and App Service configurations.
-- **Audit logging**: All scheduling API operations emit structured audit events written to Application Insights and periodically exported to Azure Storage blobs. Audit events include clinic and staff identifiers and a minimal set of operational metadata; PHI fields are redacted or hashed before export when possible.
-- **PHI handling**: Patient names, phone numbers, and appointment details are treated as PHI. A TelemetryProcessor scrubs or hashes PHI from telemetry before it is sent to Application Insights. Application code paths are instrumented to avoid logging raw PHI.
-- **Data residency**: Deployments target Azure regions in East Africa where available (South Africa North as the primary deployment). Blob locking is used on the storage account holding terraform state and exported audit snapshots to reduce accidental deletion or modification.
-- **Access control**: Role-based access (clinic admin, clinical staff, patient) with least privilege. Administrative operations require multi-person approval for production changes where applicable.
+## PHI handling and HIPAA-aligned controls
 
-Out of scope at MVP (explicitly): BAAs with Azure and partner providers, a complete formal risk assessment, and a staff training programme. These are planned follow-ups prior to any production deployment involving real patient data.
+Patient names, phone numbers, and appointment details are Protected Health Information. Full HIPAA compliance — including Business Associate Agreements with Azure and formal risk assessments — is out of scope for the MVP and will be completed before any production deployment with real patient data. What is in scope now:
+
+- **Encryption at rest**: Azure SQL Transparent Data Encryption enabled on all environments
+- **Encryption in transit**: TLS 1.3 enforced at the application perimeter
+- **PHI scrubbing in telemetry**: a `TelemetryProcessor` strips or hashes PHI fields before they reach Application Insights — this was the most labour-intensive control to implement correctly
+- **Audit logging**: every scheduling API mutation emits a structured audit event; PHI fields are redacted before export to Azure Storage
+- **Data residency**: South Africa North as primary region; East Africa availability is limited in Azure, so this is the closest compliant option
+
+The PHI scrubbing work took longer than expected. Tracing where patient data could leak into incidental logs required iterative sweeps through every code path that touches appointment records.
 
 ## CI/CD pipeline
 
-The CI/CD model is implemented in Azure DevOps and enforces three gated pipelines:
+Three gated pipelines in Azure DevOps:
 
-**PR pipeline (every pull request)**
+**PR pipeline** — build, unit tests, SonarQube quality gate (coverage ≥ 80%, no critical issues). PR is blocked if the gate fails. No exceptions.
 
-- Build and run unit tests across services
-- SonarQube quality gate (coverage ≥ 80%, no critical issues)
-- Static analysis for secrets and drift detectors
-- PR blocked if quality gate fails
+**Staging pipeline** — build, test, SonarQube gate, Docker image push to Azure Container Registry, `terraform plan` against staging (no apply), deploy to staging via App Service deployment slots, integration test suite against staging endpoints.
 
-**Staging pipeline (merge to `develop`)**
+**Production pipeline** — manual approval gate, `terraform apply` to production with diff review, blue/green deployment via slot swap, smoke tests post-deploy with automatic rollback if they fail within 5 minutes.
 
-- Build, test, SonarQube gate
-- Docker image build and push to Azure Container Registry
-- Terraform plan (no apply) executed against staging subscription
-- Deploy to staging via App Service deployment slots
-- Run integration test suite against staging endpoints
-
-**Production pipeline (merge to `main`)**
-
-- Manual approval gate; change owners sign off
-- Terraform apply to production (review diffs prior to apply)
-- Blue/green deployment via App Service slot swap
-- Smoke tests run post-deploy; automatic rollback if smoke tests fail within 5 minutes
-
-This model ensures infrastructure drift is caught early (a frequent source of incidents) and that production changes are deliberate and reviewed.
+The `terraform plan` step in the staging pipeline has been the most valuable addition. It surfaces infrastructure drift before it reaches production and makes every deployment reviewable.
 
 ## Current status and roadmap
 
@@ -150,28 +121,16 @@ This model ensures infrastructure drift is caught early (a frequent source of in
 | Analytics Service | Design phase |
 | M-Pesa deposit-to-confirm | Backlog |
 
-Expected MVP: Q2 2026. The MVP scope includes the Scheduling Service, Identity Service, and Notification Service sufficient for a pilot clinic to replace manual WhatsApp scheduling.
+Expected MVP: Q2 2026. The MVP scope is the Scheduling Service, Identity Service, and Notification Service — sufficient for a pilot clinic to replace manual WhatsApp scheduling.
 
-## Outcomes
+## What I've learned so far
 
-The following target outcomes are projections based on comparable interventions and early piloting assumptions.
+**Event sourcing adds complexity that needs justification.** For a scheduling system, a full event-sourced model introduces operational overhead that isn't warranted at MVP scale. The architecture uses a pragmatic hybrid: an append-only audit event log for compliance purposes, combined with a canonical relational view for fast reads. This gives the audit trail without the query complexity of rebuilding state from events.
 
-<OutcomeGrid>
-<OutcomeCard metric="Target no-show reduction" value="40%" context="Projected based on comparable scheduling intervention studies in similar healthcare markets" projected={true} />
-<OutcomeCard metric="Target admin efficiency gain" value="50%" context="Reduction in manual scheduling and follow-up overhead for clinic staff" projected={true} />
-<OutcomeCard metric="Environments provisioned" value="3" context="dev, staging, and production — fully reproducible via Terraform" />
-</OutcomeGrid>
+**Terraform revealed drift I didn't know existed.** Running `terraform plan` in CI against staging caught a manual change to a Redis cache configuration that had been applied directly to the portal. Without the plan step, that change would have been silently overwritten on the next deployment.
 
-## Operational lessons learned
+**PHI scope creep is real.** Every time I thought I'd found all the places patient data could appear in logs or telemetry, I found another one. Building PHI classification into the data model early — rather than auditing for it later — would have saved significant time.
 
-**Event sourcing adds complexity that must be justified.** For a straightforward scheduling system event sourcing introduces additional operational overhead. The architecture adopted a pragmatic hybrid: an append-only event log for audit purposes combined with a canonical relational view for fast reads. This provides an auditable history while keeping querying and day-to-day operations simple.
+---
 
-**Terraform revealed configuration drift early.** Running `terraform plan` in CI against staging caught manual changes that had drifted from code. Enforcing that all changes go through the pipeline prevented further configuration drift and increased confidence in deployment automation.
-
-**HIPAA scope creep is real and actionable.** Scrubbing PHI out of telemetry was the most straightforward control; tracing accidental PHI in incidental logs required iterative sweeps. Building PHI classification into the data model and adding guards in telemetry and logging pipelines reduced the manual effort required during audits.
-
-## Closing notes
-
-This architecture deliberately chooses managed Azure services to reduce operational surface area while retaining the ability to migrate to alternative cloud providers if needed. The design intent is to be honest about current capabilities: the project is in-development, several controls are intentionally scoped for the MVP, and full HIPAA compliance (including BAAs and formal assessments) is a planned activity before any production deployment with real patient data.
-
-For implementation details and repository references see: [github.com/edogola4](https://github.com/edogola4)
+For repository and implementation details: [github.com/edogola4](https://github.com/edogola4)
