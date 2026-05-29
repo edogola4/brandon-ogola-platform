@@ -10,7 +10,7 @@ export default function Hero() {
     >
       <div className="max-w-2xl">
         <p className="text-sm font-medium text-neutral-400 tracking-wide">
-          {HERO.name}
+          {/*{HERO.name}*/}
         </p>
 
         <h1 className="mt-3 text-4xl md:text-5xl font-extrabold leading-snug tracking-tight text-neutral-900">
