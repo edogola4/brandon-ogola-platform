@@ -1,0 +1,175 @@
+---
+title: "What I Learned Shipping AI Features in Production"
+slug: "shipping-ai-features-in-production"
+description: "Honest lessons from building a Claude-powered chatbot, a pgvector semantic search pipeline, and an AI assistant into real products — covering prompt architecture, cost decisions, rate limiting, and where AI actually earns its place."
+date: "2026-01-15"
+tags: ["AI", "Anthropic", "OpenAI", "Production", "Engineering"]
+---
+
+There is a gap between AI demos and AI in production. The demo works because the inputs are controlled, the scope is narrow, and nobody is trying to break it. Production is different. Real users ask off-topic questions, hit rate limits, send malformed input, and expect the system to behave consistently at 2am when you are not watching.
+
+I have shipped three AI features across two products over the past year. This is what I learned.
+
+## The Riggs London Scent Advisor
+
+The first was a fragrance recommendation chatbot for a Kenyan e-commerce platform. The product problem was real: customers would ask "what should I buy for my dad who likes the outdoors" and leave when keyword search returned nothing useful. A constrained Claude chatbot was the right tool.
+
+### Choosing the model
+
+I chose Claude 3.5 Haiku over Sonnet for one reason: response latency. A chatbot that takes 4 seconds to respond in a shopping context loses the user. Haiku returns first tokens in under 300ms. The accuracy tradeoff was acceptable because the domain was narrow — fragrance recommendations from a catalogue of 40 products. A smaller, faster model constrained to a tight domain outperforms a larger model given a vague brief.
+
+The lesson: model selection is a product decision, not just a technical one. Optimise for the user experience the feature needs to deliver, not for benchmark performance in the abstract.
+
+### Prompt architecture matters more than model choice
+
+The system prompt does more work than most engineers expect. The first version of the Scent Advisor had a vague system prompt — "you are a helpful fragrance assistant." It worked in testing. In production, users immediately started asking it about shipping times, return policies, and unrelated products. It answered everything, which meant it was useless for the one thing it was supposed to do.
+
+The second version added explicit constraints:
+
+```
+Answer only questions about fragrance recommendations from the available catalogue.
+If asked about shipping, returns, pricing, or anything outside fragrance guidance,
+respond: "I can only help with fragrance recommendations. For other questions,
+visit our help centre."
+Never fabricate product names, prices, or availability.
+If no product matches the description, say so and suggest the closest available option.
+```
+
+This cut off-topic responses by roughly 80%. The explicit "never fabricate" instruction reduced hallucinated product names to near zero. The model will still occasionally confabulate if you let it — the constraint is in the prompt, not in the model architecture.
+
+The lesson: the system prompt is the product specification for your AI feature. Write it with the same rigour you would write an API contract.
+
+### Streaming is not optional for chat
+
+I shipped the first version without streaming — wait for the full response, then render it. Users thought it was broken. A 2-second blank screen followed by a full paragraph appearing looks like a network error. Streaming the response token by token, even at the same total latency, feels responsive.
+
+Implementing streaming with Claude's streaming API took half a day. It should have been in scope from day one.
+
+The lesson: for any conversational AI feature, streaming is a baseline requirement, not an enhancement.
+
+### Rate limiting saved the project budget
+
+Without rate limiting, a single user discovered they could have extended conversations with the chatbot and left it running. The OpenAI and Anthropic APIs charge per token. An unprotected chat endpoint is an open billing liability.
+
+I implemented two limits: 10 messages per session (tracked by session ID) and 50 messages per IP per day (server-side). The session limit covers the normal use case — a customer needs 3–5 exchanges to find a recommendation. The daily IP limit covers abuse.
+
+The cost without rate limiting: unbounded. The cost with it: approximately $15/month at projected traffic. The limits also had a product benefit — they created a natural nudge toward completing a purchase rather than treating the chatbot as entertainment.
+
+The lesson: rate limiting AI endpoints is not optional. Design it into the architecture before launch, not after your first unexpected invoice.
+
+## The pgvector Semantic Search Pipeline
+
+The second AI feature was semantic product search using OpenAI embeddings and pgvector in PostgreSQL. The problem it solved: zero-result searches for intent-based queries. "Something woody and masculine for a gift" should return results. With keyword search, it returns nothing.
+
+### The case for staying in PostgreSQL
+
+The first architectural instinct was to reach for a dedicated vector database — Pinecone, Weaviate, or Qdrant. I did not. The product catalogue was small (under 500 products), the team was one engineer (me), and adding a managed vector database service would mean another API key, another billing account, another failure point, and another service to monitor.
+
+pgvector is a PostgreSQL extension. The product data was already in PostgreSQL. Adding a `vector(1536)` column to a products table and an IVFFlat index is three SQL statements. The operational surface area stays the same.
+
+```sql
+CREATE EXTENSION IF NOT EXISTS vector;
+
+ALTER TABLE products ADD COLUMN embedding vector(1536);
+
+CREATE INDEX ON products
+  USING ivfflat (embedding vector_cosine_ops)
+  WITH (lists = 100);
+```
+
+At scale — millions of vectors, sub-10ms query requirements, complex filtering — a dedicated vector database is the right call. At the scale of a product catalogue, it is overengineering.
+
+The lesson: choose the vector storage that matches your scale. pgvector is not a compromise — it is the correct choice for most products that are not at hyperscale.
+
+### Embeddings are generated once, queried many times
+
+The embedding generation cost is paid at indexing time — when a product is created or updated. The query cost is the embedding of the search string, which is a single API call per search. At 1536 dimensions with `text-embedding-3-small`, this costs fractions of a cent per query.
+
+I built an idempotent indexing script that runs as part of the deployment pipeline. It reads all products, computes a SHA-256 hash of the content being embedded, and skips re-embedding if the hash matches what is stored. This means re-running the indexer on an unchanged catalogue costs nothing.
+
+```typescript
+const hash = crypto.createHash('sha256').update(chunk).digest('hex')
+
+const existing = await pool.query(
+  'SELECT content_hash FROM content_embeddings WHERE slug = $1',
+  [slug]
+)
+
+if (existing.rows[0]?.content_hash === hash) {
+  console.log(`Skipped (unchanged): ${slug}`)
+  continue
+}
+
+const embedding = await generateEmbedding(chunk)
+// upsert into content_embeddings...
+```
+
+The lesson: separate embedding generation (expensive, infrequent) from embedding querying (cheap, frequent). An indexing script that runs idempotently at deploy time is simpler and cheaper than generating embeddings on write.
+
+### The fallback strategy is not optional
+
+Semantic search with a similarity threshold returns no results for some queries — particularly very specific product names or model numbers where exact matching is what the user wants. I implemented a fallback: if vector search returns fewer than 3 results above the similarity threshold, run a PostgreSQL full-text search and merge the results.
+
+```typescript
+const vectorResults = await semanticSearch(query, 8, 0.75)
+
+if (vectorResults.length >= 3) return vectorResults
+
+// Fall back to full-text search and merge
+const ftsResults = await db.execute(sql`
+  SELECT id, name, description,
+    ts_rank(search_vector, plainto_tsquery('english', ${query})) AS similarity
+  FROM products
+  WHERE search_vector @@ plainto_tsquery('english', ${query})
+  ORDER BY similarity DESC
+  LIMIT 8
+`)
+
+const merged = [...vectorResults]
+for (const result of ftsResults.rows) {
+  if (!merged.find((r) => r.id === result.id)) merged.push(result)
+}
+return merged.slice(0, 8)
+```
+
+This meant zero-result searches dropped significantly. The fallback also covers the case where the embedding index is not yet populated — new products that have not been indexed yet will still appear in full-text search results.
+
+The lesson: semantic search should augment keyword search, not replace it. Build the fallback from day one.
+
+## The AI Engineering Assistant
+
+The third feature was a Claude-powered assistant on this site — the one you may have already interacted with. It answers questions about my work, projects, and availability.
+
+### The constraint architecture
+
+The challenge with a personal AI assistant is scope. Without constraints, it becomes a general-purpose chatbot that can be prompted into saying anything, including things I would not say. The system prompt needed to define both what it would do and what it would refuse to do.
+
+I spent more time on the refusal instructions than on the capability instructions. The model is explicitly told to never discuss pricing (I handle that directly), never fabricate project details or metrics, and to decline questions outside the professional domain politely and consistently.
+
+The metrics matter because they are on the CV. If a user asks "did you really achieve 35% faster API response times" and the model speculates or embellishes, that is a credibility problem. The constraint is blunt: if uncertain, say so and direct the user to email.
+
+The lesson: for a personal or brand AI assistant, the refusal architecture is as important as the response architecture. Define what it will not do with the same precision as what it will do.
+
+### Where AI does not belong
+
+The most useful thing I learned across these three features was where not to use AI.
+
+I considered AI for the contact form — triage incoming inquiries, categorise by project type, estimate fit. I did not build it. The volume does not justify the complexity, and the cost of a misclassified high-value inquiry is high. A structured form with a select field does the same job with zero latency, zero cost, and zero failure modes.
+
+I considered AI-generated case study summaries — dynamically summarise the content based on what a visitor seems interested in. I did not build it. The case studies are already written. Adding AI-generated summaries would make the content less reliable, not more useful.
+
+The pattern: AI earns its place when it solves a problem that structured data and deterministic code cannot solve. Intent-based search is that problem. Natural language recommendations are that problem. Categorising a dropdown selection is not.
+
+The lesson: the question is not "how can I use AI here" but "is this a problem that AI is actually suited to solving." Most product problems are not.
+
+## What I would do differently
+
+**Ship streaming from day one.** Every conversational AI feature needs streaming. It is not a nice-to-have.
+
+**Write the system prompt as a specification.** Treat it as a contract — explicit inputs, explicit outputs, explicit refusals. Review it the same way you would review an API design.
+
+**Rate limit before you launch, not after.** The rate limiting architecture should be designed with the same care as the feature itself. An unprotected AI endpoint is a billing risk and an abuse vector.
+
+**Stay in your existing infrastructure when the scale allows.** pgvector in PostgreSQL is not a compromise. It is the right tool for most products. Resist the instinct to reach for a new managed service when an extension to your existing one will do.
+
+**Test the refusal cases as rigorously as the happy path.** For every capability you build into an AI feature, test what happens when a user tries to circumvent it. The system prompt is a boundary, not a lock — motivated users will probe it.
