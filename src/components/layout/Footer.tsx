@@ -43,7 +43,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-6 border-t border-neutral-200 pt-4 text-center text-xs text-neutral-600">
-          © {year} Brandon Ogola. Built with Next.js. Deployed on Vercel.
+          © {year} Brandon Ogola
         </div>
       </div>
     </footer>
