@@ -94,7 +94,7 @@ async function handler(request: Request): Promise<Response> {
     }
 
     const model = gemini.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.0-flash',
       systemInstruction: ASSISTANT_SYSTEM_PROMPT,
     })
 
