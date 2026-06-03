@@ -1,7 +1,6 @@
-import { anthropic, ASSISTANT_SYSTEM_PROMPT } from '@/lib/anthropic'
+import { getGeminiClient, ASSISTANT_SYSTEM_PROMPT } from '@/lib/gemini'
 import logger from '@/lib/logger'
 import { withApiLogger } from '@/lib/api-logger'
-import type { MessageParam } from '@anthropic-ai/sdk/resources/messages'
 
 type Role = 'user' | 'assistant'
 
@@ -12,7 +11,6 @@ type ChatMessage = {
 
 const DAILY_LIMIT = 50
 
-// In-memory rate limit map: key -> { count, resetAt }
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
 
 async function hashString(input: string): Promise<string> {
@@ -31,12 +29,11 @@ async function handler(request: Request): Promise<Response> {
   try {
     const body = await request.json() as { messages?: ChatMessage[]; sessionId?: string }
     const messages = body.messages ?? []
-    const sessionId = body.sessionId ?? ''
 
     // Extract client IP
     const forwardedHeader = request.headers.get('x-forwarded-for')
     const realIpHeader = request.headers.get('x-real-ip')
-    let firstForwarded: string | undefined = undefined
+    let firstForwarded: string | undefined
     if (forwardedHeader && forwardedHeader.length > 0) {
       const parts = forwardedHeader.split(',')
       if (parts[0]) firstForwarded = parts[0].trim()
@@ -55,8 +52,7 @@ async function handler(request: Request): Promise<Response> {
         logger.warn({ route: '/api/ai' }, 'daily rate limit reached')
         return Response.json({ error: 'Daily message limit reached. Email edogola4@gmail.com for direct contact.' }, { status: 429 })
       }
-    } else if (!entry || entry.resetAt <= now) {
-      // reset window: next UTC midnight
+    } else {
       const tomorrow = new Date()
       tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
       tomorrow.setUTCHours(0, 0, 0, 0)
@@ -83,52 +79,51 @@ async function handler(request: Request): Promise<Response> {
       return Response.json({ errors }, { status: 422 })
     }
 
-    // Increment count (optimistic)
-    const current = rateLimitMap.get(key)!
+    // Increment rate limit count
+    const current = rateLimitMap.get(key) ?? { count: 0, resetAt: Date.now() + 86400000 }
     current.count += 1
     rateLimitMap.set(key, current)
 
-    // Guard: no API key configured
-    if (!process.env.ANTHROPIC_API_KEY) {
-      logger.warn('ANTHROPIC_API_KEY not configured — returning fallback response')
-      return new Response("AI assistant is not configured. Email edogola4@gmail.com directly.", {
+    const gemini = getGeminiClient()
+    if (!gemini) {
+      logger.warn('GEMINI_API_KEY not configured — returning fallback response')
+      return new Response('AI assistant is not configured. Email edogola4@gmail.com directly.', {
         status: 200,
         headers: { 'Content-Type': 'text/plain; charset=utf-8' },
       })
     }
 
-    // Map messages to Anthropic MessageParam shape
-    const anthroMessages: MessageParam[] = messages.map((m) => ({ role: m.role, content: m.content }))
+    const model = gemini.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      systemInstruction: ASSISTANT_SYSTEM_PROMPT,
+    })
 
-    // Call Anthropic streaming API
+    // Build Gemini chat history (all messages except the last user message)
+    const history = messages.slice(0, -1).map((m) => ({
+      role: m.role === 'user' ? 'user' : 'model',
+      parts: [{ text: m.content }],
+    }))
+
+    const lastMessage = messages[messages.length - 1]
+
     try {
-      const stream = anthropic.messages.stream({
-        model: 'claude-haiku-4-5',
-        max_tokens: 500,
-        system: ASSISTANT_SYSTEM_PROMPT,
-        messages: anthroMessages,
-      })
+      const chat = model.startChat({ history })
+      const result = await chat.sendMessageStream(lastMessage?.content ?? '')
 
-      // Verify the stream can start before returning the response
-      // This surfaces auth errors synchronously before we hand off to ReadableStream
       const readableStream = new ReadableStream({
         async start(controller) {
           try {
-            for await (const chunk of stream) {
-              if (
-                chunk.type === 'content_block_delta' &&
-                chunk.delta.type === 'text_delta'
-              ) {
-                controller.enqueue(new TextEncoder().encode(chunk.delta.text))
+            for await (const chunk of result.stream) {
+              const text = chunk.text()
+              if (text) {
+                controller.enqueue(new TextEncoder().encode(text))
               }
             }
             controller.close()
           } catch (streamErr) {
-            logger.error({ err: streamErr }, 'anthropic stream error')
+            logger.error({ err: streamErr }, 'gemini stream error')
             controller.enqueue(
-              new TextEncoder().encode(
-                "I'm having trouble responding right now. Email edogola4@gmail.com directly."
-              )
+              new TextEncoder().encode("I'm having trouble responding right now. Email edogola4@gmail.com directly.")
             )
             controller.close()
           }
@@ -142,15 +137,18 @@ async function handler(request: Request): Promise<Response> {
         },
       })
     } catch (err) {
-      logger.error({ err }, 'anthropic stream initialisation error')
-      return new Response(
-        "I'm having trouble responding right now. Email edogola4@gmail.com directly.",
-        { status: 200, headers: { 'Content-Type': 'text/plain; charset=utf-8' } }
-      )
+      logger.error({ err }, 'gemini initialisation error')
+      return new Response("I'm having trouble responding right now. Email edogola4@gmail.com directly.", {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      })
     }
   } catch (err) {
     logger.error({ err }, 'unhandled error in /api/ai')
-    return new Response("I'm having trouble responding right now. Please email edogola4@gmail.com directly.", { status: 200, headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
+    return new Response("I'm having trouble responding right now. Please email edogola4@gmail.com directly.", {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    })
   }
 }
 
