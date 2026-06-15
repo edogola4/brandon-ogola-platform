@@ -213,9 +213,9 @@ export default function AIAssistant() {
                 {m.content}
                 {m.content === '' && isLoading && (
                   <span className="inline-flex gap-1" aria-label="Thinking">
-                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 animate-bounce [animation-delay:0ms]" />
-                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 animate-bounce [animation-delay:150ms]" />
-                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 animate-bounce [animation-delay:300ms]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 animate-bounce ai-dot-1" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 animate-bounce ai-dot-2" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 animate-bounce ai-dot-3" />
                   </span>
                 )}
               </div>

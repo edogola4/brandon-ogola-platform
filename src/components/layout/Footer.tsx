@@ -20,14 +20,18 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_1fr] gap-6 items-center">
           <div className="text-left">
-            <div className="text-lg font-semibold">Brandon Ogola</div>
+            <div className="text-lg font-semibold">
+              <Link href="/" className="hover:text-neutral-600 transition-colors">
+                Brandon Ogola
+              </Link>
+            </div>
           </div>
 
           <nav className="flex items-center justify-center">
             <ul className="flex flex-wrap md:flex-nowrap gap-4 text-sm justify-center">
               {navLinks.map((link) => (
                 <li key={link.href} className="whitespace-nowrap">
-                  <Link href={link.href} className="text-sm">
+                  <Link href={link.href} className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
                     {link.label}
                   </Link>
                 </li>

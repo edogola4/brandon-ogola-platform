@@ -33,7 +33,7 @@ export function MetricCard({ label, value, context, trend = 'neutral' }: MetricC
   const valueColor = trend === 'up' ? 'text-emerald-700' : trend === 'down' ? 'text-red-600' : 'text-neutral-900'
 
   return (
-    <div className="bg-white border border-neutral-200 rounded-lg p-5 flex flex-col gap-2">
+    <div className="bg-white border border-neutral-200 rounded-lg p-5 flex flex-col gap-2 hover:border-neutral-300 transition-colors">
       <div className="text-xs font-medium uppercase tracking-wide text-neutral-500">{label}</div>
       <div className={`flex items-center gap-1.5 text-3xl font-bold ${valueColor}`}>
         {value}

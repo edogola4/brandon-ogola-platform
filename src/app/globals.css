@@ -115,7 +115,10 @@ body {
 .mdx-body td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #e5e5e5; vertical-align: top; }
 .mdx-body tr:last-child td { border-bottom: none; }
 .mdx-body hr { border: none; border-top: 1px solid #e5e5e5; margin-top: 2.5rem; margin-bottom: 2.5rem; }
-/* Custom MDX components carry their own Tailwind classes — no override needed */
+/* AI assistant loading dot stagger — avoids arbitrary Tailwind values */
+.ai-dot-1 { animation-delay: 0ms; }
+.ai-dot-2 { animation-delay: 150ms; }
+.ai-dot-3 { animation-delay: 300ms; }
 
 /* rehype-pretty-code — github-light theme token colours */
 .mdx-body code[data-theme],
