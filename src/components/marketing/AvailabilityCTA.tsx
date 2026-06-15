@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Button } from '../ui'
+import { AVAILABILITY_CTA } from '../../content/data/home'
 
 export default function AvailabilityCTA() {
   return (
@@ -9,16 +10,14 @@ export default function AvailabilityCTA() {
           id="cta-heading"
           className="text-2xl font-semibold text-neutral-900"
         >
-          Looking for a contract engineer?
+          {AVAILABILITY_CTA.heading}
         </h2>
         <p className="mt-3 text-neutral-600 leading-relaxed">
-          I take on select engagements in backend API engineering, full-stack SaaS builds,
-          AI feature integration, and cloud infrastructure. Typical engagements run 4–12 weeks.
-          Based in Nairobi, Kenya — remote-first.
+          {AVAILABILITY_CTA.body}
         </p>
         <div className="mt-6">
           <Button asChild variant="primary" size="lg">
-            <Link href="/contact">Start a conversation</Link>
+            <Link href={AVAILABILITY_CTA.cta.href}>{AVAILABILITY_CTA.cta.label}</Link>
           </Button>
         </div>
       </div>

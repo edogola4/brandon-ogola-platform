@@ -3,6 +3,8 @@
 import React from 'react'
 import { usePathname } from 'next/navigation'
 
+const CONTACT_EMAIL = 'edogola4@gmail.com'
+
 type Role = 'user' | 'assistant'
 type ChatMessage = { id: string; role: Role; content: string }
 
@@ -90,7 +92,7 @@ export default function AIAssistant() {
       if (!res.body) {
         setMessages((m) => m.map((msg) =>
           msg.id === placeholderId
-            ? { ...msg, content: "I'm having trouble responding right now. Email edogola4@gmail.com directly." }
+            ? { ...msg, content: `I'm having trouble responding right now. Email ${CONTACT_EMAIL} directly.` }
             : msg
         ))
         setIsLoading(false)
@@ -118,7 +120,7 @@ export default function AIAssistant() {
     } catch {
       setMessages((m) => m.map((msg) =>
         msg.id === placeholderId
-          ? { ...msg, content: "I'm having trouble responding right now. Email edogola4@gmail.com directly." }
+          ? { ...msg, content: `I'm having trouble responding right now. Email ${CONTACT_EMAIL} directly.` }
           : msg
       ))
     } finally {
@@ -154,7 +156,7 @@ export default function AIAssistant() {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="AI assistant"
+        aria-labelledby="ai-assistant-title"
         className={`fixed top-0 right-0 h-full w-full max-w-sm z-50 flex flex-col bg-white shadow-xl transition-transform duration-300 ease-in-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
@@ -165,7 +167,7 @@ export default function AIAssistant() {
             <span className="text-xs font-semibold text-white" aria-hidden="true">B</span>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-white leading-none">Brandon&apos;s Assistant</div>
+            <div className="text-sm font-medium text-white leading-none" id="ai-assistant-title">Brandon&apos;s Assistant</div>
             <div className="text-xs text-neutral-400 mt-0.5">Answers questions about my work</div>
           </div>
           <div className="flex items-center gap-3">
@@ -265,7 +267,7 @@ export default function AIAssistant() {
           {sessionLimitReached && (
             <p className="mt-2 text-xs text-neutral-400 text-center">
               Session limit reached.{' '}
-              <a href="mailto:edogola4@gmail.com" className="underline hover:text-neutral-600">Email directly</a>.
+              <a href={`mailto:${CONTACT_EMAIL}`} className="underline hover:text-neutral-600">Email directly</a>.
             </p>
           )}
         </div>

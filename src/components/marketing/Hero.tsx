@@ -9,9 +9,6 @@ export default function Hero() {
       className="max-w-6xl mx-auto px-4 pt-16 pb-14 border-b border-neutral-100"
     >
       <div className="max-w-2xl">
-        <p className="text-sm font-medium text-neutral-400 tracking-wide">
-          {/*{HERO.name}*/}
-        </p>
 
         <h1 className="mt-3 text-4xl md:text-5xl font-extrabold leading-snug tracking-tight text-neutral-900">
           {HERO.title}

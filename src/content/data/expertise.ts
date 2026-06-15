@@ -3,6 +3,39 @@ export type ExpertiseArea = {
   description: string
 }
 
+export const TRUST_MARQUEE_ITEMS: string[] = [
+  'ASP.NET Core',
+  'C#',
+  'Next.js',
+  'TypeScript',
+  'React',
+  'Blazor',
+  'Python',
+  'Flask',
+  'Fastify',
+  'Node.js',
+  'PostgreSQL',
+  'pgvector',
+  'Redis',
+  'Prisma',
+  'M-Pesa Daraja',
+  'Pesapal',
+  'WhatsApp Business',
+  "Africa's Talking",
+  'Anthropic Claude',
+  'OpenAI',
+  'Azure',
+  'AWS',
+  'Docker',
+  'Kubernetes',
+  'Terraform',
+  'GitHub Actions',
+  'Turborepo',
+  'SignalR',
+  'Shopify',
+  'SendGrid',
+]
+
 export const EXPERTISE_AREAS: ExpertiseArea[] = [
   {
     title: 'Backend & API Engineering',

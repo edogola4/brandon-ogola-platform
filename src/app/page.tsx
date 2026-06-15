@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import Hero from '../components/marketing/Hero'
 import TrustMarquee from '../components/marketing/TrustMarquee'
 import ExpertiseGrid from '../components/marketing/ExpertiseGrid'
@@ -36,9 +36,27 @@ export default function Page() {
 
       <MetricsStrip />
 
-      <SelectedCaseStudies />
+      <Suspense fallback={
+        <section className="max-w-6xl mx-auto px-4 py-12 border-b border-neutral-100">
+          <div className="h-4 w-32 bg-neutral-100 rounded animate-pulse mb-6" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => <div key={i} className="h-40 bg-neutral-100 rounded-lg animate-pulse" />)}
+          </div>
+        </section>
+      }>
+        <SelectedCaseStudies />
+      </Suspense>
 
-      <WritingPreview />
+      <Suspense fallback={
+        <section className="max-w-6xl mx-auto px-4 py-12 border-b border-neutral-100">
+          <div className="h-4 w-24 bg-neutral-100 rounded animate-pulse mb-6" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => <div key={i} className="h-36 bg-neutral-100 rounded-lg animate-pulse" />)}
+          </div>
+        </section>
+      }>
+        <WritingPreview />
+      </Suspense>
 
       <GitHubActivity />
 
