@@ -1,0 +1,304 @@
+---
+title: "ChamaBot — WhatsApp-Native Savings Group Automation"
+slug: "chamabot-savings-automation"
+summary: "A WhatsApp-native savings group bot for Kenyan chamas — automating M-Pesa contributions, treasurer reconciliation, and member balance queries through natural language. Built on Fastify, PostgreSQL, M-Pesa Daraja, and Anthropic Claude for multilingual command parsing."
+client: "ChamaBot (Independent Project)"
+date: "2026-01-20"
+status: "in-development"
+tags: ["Consumer Fintech", "WhatsApp", "M-Pesa", "AI", "Kenya"]
+stack: ["Fastify", "TypeScript", "PostgreSQL", "Prisma", "Redis", "M-Pesa Daraja", "WhatsApp Business API", "Anthropic Claude", "Railway"]
+outcomes:
+  - metric: "Treasurer reconciliation time"
+    value: "~80%"
+    context: "reduction — manual Excel reconciliation replaced by automated event log"
+  - metric: "Contribution tracking accuracy"
+    value: "100%"
+    context: "every payment tied to an idempotent event — no double charges, no missing entries"
+  - metric: "Languages supported"
+    value: "3"
+    context: "English, Swahili, and Sheng — Claude parses natural language commands in all three"
+  - metric: "M-Pesa payment flow"
+    value: "STK Push"
+    context: "same proven pattern as Riggs London Kenya — idempotency, callback verification, timeout reconciliation"
+---
+
+## The problem
+
+Nairobi chamas — informal savings and investment groups — are one of Kenya's most significant grassroots financial institutions. A typical chama has 10–30 members, meets monthly, collects fixed contributions from each member, and periodically pays out to one member in rotation (merry-go-round) or accumulates a shared investment fund.
+
+The entire operation runs on three tools: WhatsApp for communication, M-Pesa for money movement, and a treasurer's Excel spreadsheet for reconciliation. This works until it doesn't.
+
+The specific failure modes are consistent across groups:
+
+**No audit trail.** Contribution records live in a spreadsheet on one person's laptop. When the treasurer is unavailable, nobody can verify balances. When a member disputes a payment, there's no authoritative record — only screenshots of M-Pesa messages that can be edited.
+
+**Manual reconciliation.** The treasurer receives M-Pesa notifications, cross-references them against the member list, updates the spreadsheet, and manually messages the group to confirm. For a 20-member group with monthly cycles, this is 2–3 hours of work every month.
+
+**No reminders.** Members forget contribution dates. The treasurer sends manual WhatsApp reminders. Non-contributors slow down the payout cycle for everyone.
+
+**No self-service balance queries.** Members can only know their contribution history by asking the treasurer. At 11pm the night before a payout, that's a problem.
+
+ChamaBot replaces the spreadsheet and the manual workflows with a WhatsApp-native system. Members interact in natural language — the same way they already use WhatsApp. The bot handles payment collection, confirmation, reminders, and balance queries. The treasurer gets an automated event log and never touches Excel again.
+
+## Architecture
+
+The system is built as a single Fastify service on Railway, backed by PostgreSQL and Redis. The WhatsApp Business API handles all message delivery and receipt. M-Pesa Daraja handles all money movement. Claude handles natural language parsing when rigid command matching is insufficient.
+
+<ArchitectureDiagram caption="ChamaBot system architecture">
+<svg viewBox="-10 -10 860 400" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ChamaBot architecture diagram">
+  <defs>
+    <marker id="arr-c" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  {/* Member */}
+  <rect x="20" y="160" width="120" height="50" rx="4" fill="none" stroke="currentColor" strokeWidth="1.2"/>
+  <text x="80" y="182" textAnchor="middle" fontSize="12" fill="currentColor">Member</text>
+  <text x="80" y="198" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">WhatsApp</text>
+
+  {/* WhatsApp Business API */}
+  <rect x="190" y="140" width="150" height="90" rx="4" fill="none" stroke="currentColor" strokeWidth="1.2"/>
+  <text x="265" y="173" textAnchor="middle" fontSize="12" fill="currentColor">WhatsApp</text>
+  <text x="265" y="189" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">Business API</text>
+  <text x="265" y="205" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">Webhooks + Send</text>
+
+  {/* Fastify API */}
+  <rect x="400" y="120" width="160" height="130" rx="4" fill="none" stroke="currentColor" strokeWidth="1.2"/>
+  <text x="480" y="155" textAnchor="middle" fontSize="12" fill="currentColor">Fastify API</text>
+  <text x="480" y="172" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">Message router</text>
+  <text x="480" y="188" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">Payment handler</text>
+  <text x="480" y="204" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">NLU dispatcher</text>
+  <text x="480" y="220" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">Scheduler (cron)</text>
+
+  {/* Daraja */}
+  <rect x="190" y="30" width="150" height="70" rx="4" fill="none" stroke="currentColor" strokeWidth="1.2"/>
+  <text x="265" y="60" textAnchor="middle" fontSize="12" fill="currentColor">M-Pesa Daraja</text>
+  <text x="265" y="77" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">STK Push + B2C</text>
+
+  {/* Claude */}
+  <rect x="620" y="30" width="130" height="70" rx="4" fill="none" stroke="currentColor" strokeWidth="1.2"/>
+  <text x="685" y="60" textAnchor="middle" fontSize="12" fill="currentColor">Claude Haiku</text>
+  <text x="685" y="77" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">NLU + intent</text>
+
+  {/* PostgreSQL */}
+  <rect x="620" y="150" width="130" height="70" rx="4" fill="none" stroke="currentColor" strokeWidth="1.2"/>
+  <text x="685" y="180" textAnchor="middle" fontSize="12" fill="currentColor">PostgreSQL</text>
+  <text x="685" y="197" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">Event log + state</text>
+
+  {/* Redis */}
+  <rect x="620" y="270" width="130" height="70" rx="4" fill="none" stroke="currentColor" strokeWidth="1.2"/>
+  <text x="685" y="300" textAnchor="middle" fontSize="12" fill="currentColor">Redis</text>
+  <text x="685" y="317" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.7">Sessions + idempotency</text>
+
+  {/* Lines */}
+  <line x1="140" y1="185" x2="186" y2="185" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr-c)"/>
+  <line x1="340" y1="185" x2="396" y2="185" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr-c)"/>
+  <line x1="400" y1="160" x2="344" y2="80" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr-c)"/>
+  <line x1="560" y1="155" x2="616" y2="80" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr-c)"/>
+  <line x1="560" y1="185" x2="616" y2="185" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr-c)"/>
+  <line x1="560" y1="220" x2="616" y2="305" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr-c)"/>
+</svg>
+</ArchitectureDiagram>
+
+### Why a single Fastify service rather than microservices
+
+SmartSchedule Healthcare uses microservices because it needs independent scaling of scheduling, identity, and notification services across a multi-tenant enterprise system. ChamaBot doesn't. A single Fastify service with clear internal module boundaries — message routing, payment handling, NLU dispatch, scheduler — gives the separation of concerns without the operational overhead of service-to-service communication, separate deployments, and distributed tracing.
+
+The rule: microservices solve scaling and team ownership problems. ChamaBot at MVP has neither problem.
+
+### WhatsApp Business API over OpenWA
+
+The conversation architecture used as reference cited OpenWA, which works by simulating the WhatsApp Web client. This is a grey area — it violates WhatsApp's terms of service and is unsuitable for a system handling real money. ChamaBot uses the official WhatsApp Business API through a BSP (Business Solution Provider). This is the same integration path used in the Riggs London notification pipeline — proven, compliant, and supported.
+
+## Data model
+
+Seven tables. Every design decision is driven by the audit trail requirement — money disputes get resolved from the database, not from screenshots.
+
+```sql
+-- Groups and membership
+CREATE TABLE chama_group (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name        TEXT NOT NULL,
+  wa_group_id TEXT UNIQUE NOT NULL,   -- WhatsApp group ID
+  cycle_day   INT NOT NULL,           -- day of month contributions are due
+  amount      INT NOT NULL,           -- contribution amount in KES (integer, no decimals)
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE member (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  group_id     UUID NOT NULL REFERENCES chama_group(id),
+  phone        TEXT NOT NULL,         -- E.164 format: +254...
+  name         TEXT NOT NULL,
+  role         TEXT NOT NULL CHECK (role IN ('treasurer', 'secretary', 'member')),
+  active       BOOLEAN DEFAULT TRUE,
+  UNIQUE(group_id, phone)
+);
+
+-- Contributions and payments
+CREATE TABLE contribution (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  member_id        UUID NOT NULL REFERENCES member(id),
+  group_id         UUID NOT NULL REFERENCES chama_group(id),
+  cycle_month      DATE NOT NULL,     -- first day of the contribution month
+  amount           INT NOT NULL,
+  status           TEXT NOT NULL CHECK (status IN ('pending', 'initiated', 'confirmed', 'expired', 'failed')),
+  idempotency_key  TEXT UNIQUE NOT NULL,
+  checkout_req_id  TEXT,              -- Daraja CheckoutRequestID
+  mpesa_receipt    TEXT,              -- M-Pesa receipt number on success
+  initiated_at     TIMESTAMPTZ,
+  confirmed_at     TIMESTAMPTZ,
+  created_at       TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Immutable event log — source of truth for disputes
+CREATE TABLE contribution_event (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  contribution_id UUID NOT NULL REFERENCES contribution(id),
+  event_type      TEXT NOT NULL,      -- initiated | confirmed | expired | failed | reconciled
+  payload         JSONB NOT NULL,
+  created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Merry-go-round payouts (B2C)
+CREATE TABLE payout (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  group_id      UUID NOT NULL REFERENCES chama_group(id),
+  recipient_id  UUID NOT NULL REFERENCES member(id),
+  amount        INT NOT NULL,
+  status        TEXT NOT NULL CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
+  daraja_ref    TEXT,
+  created_at    TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Conversation context for Claude NLU
+CREATE TABLE conversation_session (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  member_id   UUID NOT NULL REFERENCES member(id),
+  intent      TEXT,                   -- last parsed intent
+  context     JSONB DEFAULT '{}',     -- partial state (e.g. amount being confirmed)
+  updated_at  TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(member_id)
+);
+```
+
+**`idempotency_key` on contribution** is the same pattern used in Riggs London. When a member sends "lipa" twice in quick succession, the second STK Push request hits Redis, finds the existing key, and returns the pending contribution record without triggering a second charge. The 30-second STK Push expiry window is the race condition — idempotency is the only correct solution.
+
+**`contribution_event` as an append-only log** gives the treasurer an auditable history of every state transition. A disputed payment doesn't get resolved by asking someone — the treasurer runs `SELECT * FROM contribution_event WHERE contribution_id = $1 ORDER BY created_at` and reads the sequence of events.
+
+**`conversation_session`** bridges the stateless nature of WhatsApp webhooks. When a member texts "nitatuma sasa" ("I'll send now"), the bot needs to know they were mid-contribution, not starting a new command. Redis stores the hot session (TTL 10 minutes), Postgres persists it for audit purposes.
+
+## Contribution flow
+
+The contribution lifecycle has five states: `pending → initiated → confirmed` (success path) or `pending → initiated → expired/failed` (failure path).
+
+<ArchitectureDiagram caption="Contribution state machine">
+<svg viewBox="-10 -10 740 180" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Contribution state machine">
+  <defs>
+    <marker id="arr-sm" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  <rect x="10" y="60" width="100" height="40" rx="20" fill="none" stroke="currentColor" strokeWidth="1.2"/>
+  <text x="60" y="85" textAnchor="middle" fontSize="11" fill="currentColor">pending</text>
+
+  <rect x="160" y="60" width="100" height="40" rx="20" fill="none" stroke="currentColor" strokeWidth="1.2"/>
+  <text x="210" y="85" textAnchor="middle" fontSize="11" fill="currentColor">initiated</text>
+
+  <rect x="330" y="10" width="110" height="40" rx="20" fill="none" stroke="currentColor" strokeWidth="1.2"/>
+  <text x="385" y="35" textAnchor="middle" fontSize="11" fill="currentColor">confirmed</text>
+
+  <rect x="330" y="110" width="100" height="40" rx="20" fill="none" stroke="currentColor" strokeWidth="1.2"/>
+  <text x="380" y="135" textAnchor="middle" fontSize="11" fill="currentColor">expired</text>
+
+  <rect x="500" y="110" width="100" height="40" rx="20" fill="none" stroke="currentColor" strokeWidth="1.2"/>
+  <text x="550" y="135" textAnchor="middle" fontSize="11" fill="currentColor">failed</text>
+
+  <line x1="110" y1="80" x2="156" y2="80" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr-sm)"/>
+  <line x1="260" y1="70" x2="326" y2="36" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr-sm)"/>
+  <line x1="260" y1="90" x2="326" y2="124" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr-sm)"/>
+  <line x1="430" y1="130" x2="496" y2="130" stroke="currentColor" strokeWidth="1" markerEnd="url(#arr-sm)"/>
+
+  <text x="130" y="72" textAnchor="middle" fontSize="9" fill="currentColor" opacity="0.6">STK Push</text>
+  <text x="290" y="52" textAnchor="middle" fontSize="9" fill="currentColor" opacity="0.6">callback</text>
+  <text x="293" y="118" textAnchor="middle" fontSize="9" fill="currentColor" opacity="0.6">35s timeout</text>
+  <text x="463" y="122" textAnchor="middle" fontSize="9" fill="currentColor" opacity="0.6">ResultCode ≠ 0</text>
+</svg>
+</ArchitectureDiagram>
+
+The transition from `initiated` to `confirmed` happens when Daraja fires the STK callback with `ResultCode: 0`. The transition from `initiated` to `expired` happens when a background cron job (runs every minute) finds contributions in `initiated` state older than 35 seconds with no callback received. `failed` is set when the callback arrives with a non-zero `ResultCode` — insufficient funds, user cancelled, or STK timeout acknowledged by Daraja.
+
+Every transition writes a row to `contribution_event` before updating the `contribution` status. If the update fails after the event is written, the event log reflects the attempted transition and the reconciliation job can recover.
+
+## Claude NLU architecture
+
+Rigid command parsing (`/lipa`, `/balance`, `/history`) works for experienced users but fails for the realistic use case: a member in a hurry texting natural language in Swahili or Sheng.
+
+Claude Haiku is used only for intent classification — not for response generation. The system prompt is narrow and explicit:
+
+```
+You are a command parser for a Kenyan chama savings bot.
+Extract the intent and parameters from the member's message.
+
+Valid intents:
+- CONTRIBUTE: member wants to make their monthly contribution
+- BALANCE: member wants to know their contribution status or balance
+- HISTORY: member wants their contribution history
+- PAYOUT_STATUS: member wants to know when they receive their payout
+- HELP: member needs guidance on available commands
+- UNKNOWN: message does not match any supported intent
+
+Member context:
+- Name: {member.name}
+- Group: {group.name}
+- Current cycle: {cycle_month}
+- Outstanding amount: {outstanding} KES
+
+Respond with JSON only:
+{ "intent": "CONTRIBUTE", "params": {} }
+
+Never add commentary. Never make up information about the chama.
+If uncertain, return UNKNOWN.
+```
+
+The NLU layer classifies the intent and extracts parameters. The Fastify route handler then executes the appropriate business logic — it never delegates business logic to Claude. This keeps the AI's role narrow and auditable: input text → intent classification → structured output. The business logic is deterministic TypeScript, not probabilistic language model output.
+
+**Why Haiku specifically:** intent classification from a short WhatsApp message is a trivially narrow task. Haiku costs approximately $0.25 per million input tokens. A 100-token message classified 10,000 times costs $0.25. Sonnet would be 15x more expensive for the same task with no measurable accuracy improvement on a six-intent classifier.
+
+## M-Pesa integration: STK Push and B2C
+
+ChamaBot uses two Daraja APIs for two distinct flows:
+
+**STK Push (contributions)** — the same pattern from Riggs London Kenya. Member confirms intent, API initiates STK Push to member's registered phone number, member approves on their handset, callback fires, contribution is confirmed. Idempotency key per contribution, Redis lock for the 30-second STK window, background reconciliation for timeouts.
+
+**B2C (merry-go-round payouts)** — a different API. The treasurer triggers a payout to the nominated recipient's phone number directly from the chama's M-Pesa business account. No STK Push — the money is deposited directly. The recipient receives an M-Pesa SMS confirmation. B2C requires a separate API credential (`initiatorName`, `securityCredential`) and goes through the Daraja B2C endpoint rather than the STK Push endpoint.
+
+The separation matters: STK Push is pull (asking a user to approve a payment from their account), B2C is push (sending money to a user's account). Different credentials, different callback shapes, different failure modes.
+
+## Infrastructure
+
+| Service | Provider | Est. monthly cost |
+|---|---:|---:|
+| Fastify API + PostgreSQL + Redis | Railway | ~$25 |
+| WhatsApp Business API | Meta / BSP | ~$0 (first 1,000 conversations/month free) |
+| Claude Haiku (NLU) | Anthropic API | ~$2 at projected volume |
+| M-Pesa Daraja | Safaricom | Transaction-based, no monthly fee |
+| **Total** | | **~$27** |
+
+Railway's managed PostgreSQL handles backups. Redis is used for session state and idempotency keys only — no persistence required, so a restart doesn't break anything critical. The contribution event log in Postgres is the source of truth.
+
+## What I learned
+
+**Consumer fintech has a different failure mode than B2B fintech.** In Riggs London, a failed payment means a lost sale — recoverable. In a chama, a failed or double-charged payment means a treasurer dispute, broken trust, and potentially a member leaving the group. The idempotency and event log requirements aren't nice-to-haves — they're what makes the system trustworthy enough to be used with real money between people who know each other.
+
+**Narrow AI tasks should use narrow models.** Intent classification across six intents from short WhatsApp messages doesn't need Sonnet. It barely needs Haiku. The temptation to reach for the most capable model is expensive and often unnecessary. The question is always: what is the actual task, and what is the minimum capable model for that task?
+
+**Natural language input over rigid commands is the right call for consumer products.** Requiring members to type `/lipa 1000` creates a support burden — people forget the command, type it wrong, or just don't read the help message. Accepting "nataka kulipa" and parsing the intent is a 10-minute Claude prompt engineering exercise that makes the difference between a product people actually use and one they abandon after two cycles.
+
+**Append-only event logs are worth the extra table.** The `contribution_event` table adds one INSERT per state transition. In exchange, every dispute resolution, every audit query, and every "what happened to my payment" question gets answered from the database without involving the treasurer. That asymmetry — small write cost, large operational benefit — is the same tradeoff that makes event sourcing valuable in SmartSchedule, just at smaller scale.
+
+---
+
+For repository and implementation details: [github.com/edogola4](https://github.com/edogola4)
