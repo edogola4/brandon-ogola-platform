@@ -58,7 +58,7 @@ body {
 .marquee-track {
   display: flex;
   align-items: center;
-  animation: marquee 40s linear infinite;
+  animation: marquee 65s linear infinite;
 }
 
 .marquee-group {
