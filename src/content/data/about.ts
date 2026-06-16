@@ -1,5 +1,5 @@
 export const PROFESSIONAL_SUMMARY: string =
-  "Brandon Ogola is a full-stack software engineer based in Nairobi, Kenya, with 2+ years of hands-on experience delivering production systems across fintech, healthcare, and SaaS domains. He specialises in scalable backend architecture, AI-integrated product features, and cloud-native infrastructure on Azure and AWS.\n\nHis work spans the full delivery lifecycle — from RESTful API design and database optimisation to CI/CD automation and zero-downtime deployment. He has built and integrated real-world payment systems (M-Pesa, Pesapal), AI-powered features (Anthropic Claude, OpenAI embeddings), and enterprise SaaS platforms using ASP.NET Core, Next.js, and Blazor."
+  "Brandon Ogola is a full-stack software engineer based in Nairobi, Kenya. He started at Moringa School in 2022, building his full-stack foundation in JavaScript, TypeScript, React, and Node.js, while simultaneously completing a BSc in Computer Science at the University of Nairobi — covering data structures, algorithms, distributed systems, and computer networks.\n\nHis first professional role was at REAL BIZ Digital in 2023, delivering across three client projects and increasing user engagement by 25%. He deepened his low-level programming and system design through the ALX Software Engineering Program, building 15+ projects in C, Linux/Unix, and distributed systems.\n\nFrom there he built Riggs London Kenya — a solo production e-commerce platform integrating M-Pesa STK Push, Pesapal, an Anthropic Claude AI chatbot, pgvector semantic search, and real-time notifications. He then joined Alliance Bioversity CIAT automating workflows for a 12-person team, and most recently Cognativ Technology, where he cut API response times by 35% and achieved 80% test coverage on the SmartSaaS enterprise platform. He is currently architecting SmartSchedule Healthcare — an enterprise SaaS on .NET and Azure targeting the healthcare scheduling problem."
 
 export type TimelineType = 'employment' | 'education' | 'freelance'
 
@@ -76,12 +76,12 @@ export const DOMAINS_OF_DEPTH: DomainDepth[] = [
   {
     domain: 'Fintech Systems',
     detail:
-      "African payment infrastructure including M-Pesa STK Push, Pesapal, webhook handling, idempotency patterns, and payment state machines."
+      'Production-grade African payment systems including M-Pesa STK Push, Pesapal, webhook handling, idempotency patterns, and payment state machines — built and shipped on Riggs London Kenya.'
   },
   {
     domain: 'Healthcare SaaS',
     detail:
-      'Enterprise appointment scheduling platform with microservices, CQRS/Event Sourcing, HIPAA-aligned design, and Azure cloud infrastructure.'
+      'Enterprise appointment scheduling SaaS on .NET and Azure with microservices, CQRS/Event Sourcing, ML.NET prediction, HIPAA-aligned design, and full Terraform IaC across three environments.'
   },
   {
     domain: 'E-commerce Infrastructure',
@@ -96,7 +96,7 @@ export const DOMAINS_OF_DEPTH: DomainDepth[] = [
   {
     domain: 'AI Integrations',
     detail:
-      'Production AI features using Anthropic Claude and OpenAI embeddings — chatbots, semantic search, RAG pipelines, and streaming responses.'
+      'Production AI features using Anthropic Claude and OpenAI embeddings — AI chatbot with domain constraints, pgvector semantic search, RAG pipelines, and streaming responses. Shipped on a live e-commerce platform.'
   }
 ]
 

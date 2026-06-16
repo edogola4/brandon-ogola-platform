@@ -170,7 +170,7 @@ export const EDUCATION: EducationEntry[] = [
     institution: 'Moringa School',
     location: 'Nairobi, Kenya',
     period: 'June 2022 — December 2022',
-    detail: '24-week full-stack programme covering JavaScript, TypeScript, React, Node.js, Python, and database management. Delivered 8+ production-ready applications using agile methodologies, TDD, and pair programming.',
+    detail: '24-week full-stack programme covering JavaScript, TypeScript, React, Node.js, Python, and database management. Delivered 8+ production-ready applications using agile methodologies, TDD, and pair programming. Graduated with distinction.',
   },
 ]
 
@@ -187,12 +187,12 @@ export type Project = {
 export const PROJECTS: Project[] = [
   {
     name: 'SmartSchedule Healthcare',
-    stack: ['.NET 10', 'C#', 'ASP.NET Core', 'Blazor WebAssembly', 'Azure', 'Terraform'],
+    stack: ['.NET 9', 'C#', 'ASP.NET Core', 'Blazor WebAssembly', 'ML.NET', 'Azure', 'Terraform'],
     period: 'MVP Q2 2026',
     url: 'https://github.com/edogola4/smartschedule-healthcare',
     highlights: [
-      'Enterprise appointment scheduling SaaS targeting 40% no-show reduction and 50% administrative efficiency gains',
-      'Cloud-native microservices architecture with CQRS/Event Sourcing on Azure',
+      'Enterprise appointment scheduling SaaS targeting the healthcare scheduling problem — 40% no-show reduction and 50% administrative efficiency gains',
+      'Cloud-native microservices on Azure with CQRS/Event Sourcing, ML.NET prediction, HIPAA-aligned design, and Terraform IaC across three environments',
     ],
   },
   {
@@ -233,7 +233,7 @@ export const CERTIFICATIONS: string[] = [
 ]
 
 export const PROFESSIONAL_SUMMARY =
-  'Software Engineer with 2+ years of hands-on experience delivering full-stack applications across fintech, healthcare, and SaaS domains. Proven ability to ship production-grade systems end-to-end — from RESTful API design and database optimisation to cloud deployment and CI/CD automation. Built and integrated real-world payment systems (M-Pesa, Pesapal), AI-powered features (Anthropic Claude, OpenAI embeddings), and scalable infrastructure on Azure and AWS.'
+  'Full-stack software engineer with a foundation built at Moringa School and a BSc in Computer Science from the University of Nairobi. Proven track record delivering production systems across fintech, healthcare, and SaaS — from M-Pesa and Pesapal payment integrations to AI-powered features using Anthropic Claude and OpenAI embeddings. Experienced across ASP.NET Core, Next.js, Python, and cloud infrastructure on Azure and AWS. Currently architecting SmartSchedule Healthcare, an enterprise SaaS on .NET and Azure.'
 
 // UI labels
 export const PAGE_TITLE = 'Resume'
