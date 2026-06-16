@@ -10,6 +10,60 @@ const AREA_LINKS: Record<string, string> = {
   'Enterprise Architecture': '/case-studies/smartschedule-healthcare',
 }
 
+function AreaIcon({ title }: { title: string }) {
+  const cls = 'w-5 h-5 text-neutral-400 shrink-0'
+  switch (title) {
+    case 'Backend & API Engineering':
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M8 21h8M12 17v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M6 8l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M11 14h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+      )
+    case 'Full-Stack Product Builds':
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <rect x="2" y="3" width="20" height="18" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+        </svg>
+      )
+    case 'AI Feature Integration':
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 0 6h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1 0-6h1V6a4 4 0 0 1 4-4z" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M9 12h6M12 9v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+      )
+    case 'Cloud & DevOps':
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M18 10a6 6 0 1 0-11.6 2A4 4 0 1 0 7 20h11a4 4 0 0 0 1-7.87A6 6 0 0 0 18 10z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+        </svg>
+      )
+    case 'African Payment Systems':
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M2 10h20" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M6 15h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+      )
+    case 'Enterprise Architecture':
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="9" y="2" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+          <rect x="2" y="18" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+          <rect x="16" y="18" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M12 6v4M5 18v-4h14v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )
+    default:
+      return null
+  }
+}
+
 export default function ExpertiseGrid() {
   return (
     <section aria-labelledby="expertise-heading" className="max-w-6xl mx-auto px-4 py-12 border-b border-neutral-100">
@@ -25,6 +79,7 @@ export default function ExpertiseGrid() {
           const href = AREA_LINKS[area.title]
           const content = (
             <>
+              <AreaIcon title={area.title} />
               <h3 className="text-sm font-semibold text-neutral-900">{area.title}</h3>
               <p className="text-sm text-neutral-500 leading-relaxed flex-1">{area.description}</p>
               {href && (

@@ -4,8 +4,9 @@ import { AVAILABILITY_CTA } from '../../content/data/home'
 
 export default function AvailabilityCTA() {
   return (
-    <section aria-labelledby="cta-heading" className="max-w-6xl mx-auto px-4 py-16 border-t border-neutral-100">
-      <div className="max-w-2xl">
+    <section aria-labelledby="cta-heading" className="bg-neutral-50 border-t border-neutral-200">
+      <div className="max-w-6xl mx-auto px-4 py-16">
+        <div className="max-w-2xl">
         <h2
           id="cta-heading"
           className="text-2xl font-semibold text-neutral-900"
@@ -19,6 +20,7 @@ export default function AvailabilityCTA() {
           <Button asChild variant="primary" size="lg">
             <Link href={AVAILABILITY_CTA.cta.href}>{AVAILABILITY_CTA.cta.label}</Link>
           </Button>
+        </div>
         </div>
       </div>
     </section>
