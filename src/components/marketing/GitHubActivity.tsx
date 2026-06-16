@@ -5,9 +5,15 @@ import { useQuery } from '@tanstack/react-query'
 import { ExternalLink } from '../ui'
 import type { GitHubEvent } from '../../lib/github'
 
-function truncate(input: string, max = 60): string {
-  if (input.length <= max) return input
-  return `${input.slice(0, Math.max(0, max - 1))}…`
+const REPO_LABELS: Record<string, string> = {
+  'brandon-ogola-platform': 'Personal platform',
+  'smartschedule-healthcare': 'SmartSchedule Healthcare',
+  'edogola4': 'GitHub profile',
+}
+
+function repoLabel(fullName: string): string {
+  const short = fullName.split('/')[1] ?? fullName
+  return REPO_LABELS[short] ?? short
 }
 
 function relativeTimeFromIso(iso: string): string {
@@ -24,16 +30,14 @@ function relativeTimeFromIso(iso: string): string {
   return `${Math.floor(months / 12)}y ago`
 }
 
-const TYPE_LABEL: Record<GitHubEvent['type'], string> = {
-  PushEvent: 'push',
-  CreateEvent: 'branch',
-  PullRequestEvent: 'pull request',
+function truncate(input: string, max = 72): string {
+  if (input.length <= max) return input
+  return `${input.slice(0, Math.max(0, max - 1))}…`
 }
 
 function SkeletonRow() {
   return (
     <div className="flex items-start gap-3 animate-pulse py-3">
-      <div className="w-14 h-3 bg-neutral-200 rounded mt-1 shrink-0" />
       <div className="flex-1 space-y-2">
         <div className="w-40 h-3 bg-neutral-200 rounded" />
         <div className="w-56 h-3 bg-neutral-200 rounded" />
@@ -47,36 +51,25 @@ function EventRow({ ev }: { ev: GitHubEvent }) {
   const [relative, setRelative] = React.useState(() => relativeTimeFromIso(ev.createdAt))
 
   React.useEffect(() => {
-    const id = setInterval(
-      () => setRelative(relativeTimeFromIso(ev.createdAt)),
-      60_000
-    )
+    const id = setInterval(() => setRelative(relativeTimeFromIso(ev.createdAt)), 60_000)
     return () => clearInterval(id)
   }, [ev.createdAt])
 
-  const typeLabel = TYPE_LABEL[ev.type]
-  const repoShort = ev.repo.split('/')[1] ?? ev.repo
-
   return (
     <div className="flex items-start gap-3 py-3 border-b border-neutral-100 last:border-0">
-      <span className="text-xs font-mono text-neutral-400 mt-0.5 w-14 shrink-0">
-        {typeLabel}
-      </span>
+      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" aria-hidden="true" />
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-neutral-900 truncate">{ev.repo}</div>
+        <div className="text-sm font-medium text-neutral-900">{repoLabel(ev.repo)}</div>
         {ev.message && (
           <div className="text-sm text-neutral-500 mt-0.5 truncate">{truncate(ev.message)}</div>
         )}
         <div className="mt-1">
           <ExternalLink href={ev.url} className="text-xs text-neutral-400">
-            {repoShort}
+            View on GitHub
           </ExternalLink>
         </div>
       </div>
-      <time
-        dateTime={ev.createdAt}
-        className="text-xs text-neutral-400 mt-0.5 shrink-0"
-      >
+      <time dateTime={ev.createdAt} className="text-xs text-neutral-400 mt-0.5 shrink-0">
         {relative}
       </time>
     </div>
@@ -105,7 +98,7 @@ export default function GitHubActivity() {
         id="github-heading"
         className="text-xs font-semibold uppercase tracking-widest text-neutral-400 mb-6"
       >
-        Recent activity
+        Currently building
       </h2>
 
       {isLoading ? (

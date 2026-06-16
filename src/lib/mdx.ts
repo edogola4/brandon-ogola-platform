@@ -17,6 +17,8 @@ async function readDirSafe(dir: string): Promise<string[]> {
   }
 }
 
+const STATUS_ORDER: Record<string, number> = { live: 0, 'in-development': 1, archived: 2 }
+
 export async function getAllCaseStudies(): Promise<CaseStudyFrontmatter[]> {
   const files = await readDirSafe(CASE_STUDIES_DIR)
   if (files.length === 0) return []
@@ -26,11 +28,14 @@ export async function getAllCaseStudies(): Promise<CaseStudyFrontmatter[]> {
     const parsed = matter(raw)
     const rt = Math.max(1, Math.round(readingTime(parsed.content).minutes))
     const fm = { ...parsed.data, readingTime: rt }
-    // throws if invalid — build must fail on invalid front matter
     return CaseStudyFrontmatterSchema.parse(fm)
   })
 
-  return items.sort((a, b) => (a.date < b.date ? 1 : -1))
+  return items.sort((a, b) => {
+    const statusDiff = (STATUS_ORDER[a.status] ?? 1) - (STATUS_ORDER[b.status] ?? 1)
+    if (statusDiff !== 0) return statusDiff
+    return a.date < b.date ? 1 : -1
+  })
 }
 
 export async function getCaseStudy(slug: string): Promise<{ frontmatter: CaseStudyFrontmatter; content: string } | null> {
