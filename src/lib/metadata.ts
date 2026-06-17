@@ -18,7 +18,12 @@ export function generatePageMetadata({
   tags,
 }: PageMetadataInput): Metadata {
   const url = `https://brandonogola.dev${path}`
-  const fullTitle = path === '/' ? title : `${title} — Brandon Ogola`
+  const SUFFIX = ' — Brandon Ogola'
+  const fullTitle = path === '/'
+    ? title
+    : title.length + SUFFIX.length <= 60
+      ? `${title}${SUFFIX}`
+      : title
   const ogImageType = ogType === 'article'
     ? (path.startsWith('/writing') ? 'article' : 'case-study')
     : 'page'

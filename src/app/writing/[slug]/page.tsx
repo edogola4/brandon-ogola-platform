@@ -35,9 +35,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const art = await getArticle(slug)
   if (!art) return {}
   const fm = art.frontmatter
+  const seoTitle = fm.seoTitle ?? fm.title
+  const seoDescription = fm.seoDescription ?? fm.description
   const base = generatePageMetadata({
-    title: fm.title,
-    description: fm.description,
+    title: seoTitle,
+    description: seoDescription,
     path: `/writing/${slug}`,
     ogType: 'article',
     publishedTime: fm.date,
@@ -54,9 +56,11 @@ export default async function ArticlePage({ params }: Params) {
   const art = await getArticle(slug)
   if (!art) notFound()
   const fm = art.frontmatter
+  const seoTitle = fm.seoTitle ?? fm.title
+  const seoDescription = fm.seoDescription ?? fm.description
   const jsonLd = articleSchema({
-    title: fm.title,
-    description: fm.description,
+    title: seoTitle,
+    description: seoDescription,
     date: fm.date,
     url: `https://brandonogola.dev/writing/${slug}`,
   })

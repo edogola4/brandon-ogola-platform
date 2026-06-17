@@ -24,6 +24,8 @@ export const ArticleFrontmatterSchema = z.object({
   tags: z.array(z.string()),
   readingTime: z.number().optional(),
   canonical: z.string().optional(),
+  seoTitle: z.string().optional(),
+  seoDescription: z.string().optional(),
 })
 
 export type CaseStudyFrontmatter = z.infer<typeof CaseStudyFrontmatterSchema>
