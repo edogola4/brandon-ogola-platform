@@ -7,6 +7,16 @@ date: "2026-01-01"
 status: "in-development"
 tags: ["Healthcare", "SaaS", "Enterprise", "Azure", "Microservices"]
 stack: [".NET 10", "C#", "ASP.NET Core", "Blazor WebAssembly", "Azure App Services", "Azure Service Bus", "Azure SQL Database", "Azure Redis Cache", "Azure Key Vault", "Docker", "Kubernetes", "Terraform", "Azure DevOps", "SonarQube"]
+tagline: "An enterprise scheduling SaaS replacing WhatsApp-coordinated appointment booking for East African clinics — built infrastructure-first, with PHI controls and IaC in place before a line of application code was written."
+decisions:
+  - choice: "Pragmatic event log over full event sourcing"
+    reasoning: "A full event-sourced model introduces operational overhead that isn't warranted at MVP scale. The architecture uses an append-only audit event log for compliance purposes combined with a canonical relational view for fast reads — the audit trail without the query complexity of rebuilding state from events."
+  - choice: "Terraform IaC from day one over retrofitting later"
+    reasoning: "Retrofitting IaC onto a running system means reconciling manual changes that have drifted from what the code describes. Starting with Terraform means the code is always the source of truth. Running terraform plan in CI against staging has already caught two configuration changes that would have caused environment drift."
+  - choice: "Two-tier identity over a single provider"
+    reasoning: "Azure AD B2C handles clinic staff SSO. A lightweight local provider handles patient accounts. Patients shouldn't need an enterprise identity provider to book an appointment — the two audiences have different authentication needs and forcing them through a single path would create unnecessary friction for one of them."
+  - choice: "South Africa North as primary region over East Africa"
+    reasoning: "East Africa availability is limited in Azure. South Africa North is the closest region that meets data residency requirements for PHI handling. The tradeoff is latency for compliance — acceptable for a scheduling system where sub-100ms response times are not a hard requirement."
 outcomes:
   - metric: "Target no-show reduction"
     value: "40%"

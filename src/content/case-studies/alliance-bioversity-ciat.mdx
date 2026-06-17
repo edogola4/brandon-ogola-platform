@@ -7,6 +7,16 @@ date: "2024-11-01"
 status: "live"
 tags: ["Enterprise", "Automation", "Python", "REST APIs", "Research"]
 stack: ["Python", "Flask", "PostgreSQL", "REST APIs", "OpenAPI"]
+tagline: "Six months of internal tooling at a CGIAR research centre — Python/Flask APIs that reduced report query time from 8–12 seconds to under 500ms and eliminated the manual reconciliation work consuming research staff hours."
+decisions:
+  - choice: "Validation at ingestion over post-hoc data cleanup"
+    reasoning: "Rejecting malformed records at the API boundary before they reached the database prevented data quality issues from propagating into downstream reports. The rejected_records table also gave staff visibility into what was failing and why — which turned out to be as valuable as the validation itself."
+  - choice: "Versioned migration scripts over ad-hoc schema changes"
+    reasoning: "No manual schema changes were applied directly to production. Committing every schema change as a versioned migration script prevented the kind of drift that had made the existing system hard to reason about."
+  - choice: "Dual-audience API design over separate internal and external interfaces"
+    reasoning: "The APIs were built for two audiences simultaneously — the internal web applications and technical staff using Postman or curl directly. Clear human-readable field names, predictable pagination, and informative error messages meant both audiences benefited from a single implementation."
+  - choice: "OpenAPI specification as a first-class deliverable"
+    reasoning: "Documentation is what survives staff turnover in research organisations. The OpenAPI spec outlived the engagement and reduced onboarding time for new staff in a way that working code alone could not have done."
 outcomes:
   - metric: "Operational processing time reduction"
     value: "20%"

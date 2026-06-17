@@ -8,6 +8,16 @@ status: "live"
 tags: ["E-commerce", "Fintech", "AI", "Monorepo"]
 stack: ["Next.js 14", "Fastify", "PostgreSQL", "pgvector", "Redis", "Prisma", "TypeScript", "Turborepo", "M-Pesa", "Pesapal", "Anthropic Claude", "OpenAI", "Vercel", "Railway"]
 liveUrl: "https://riggslondonkenya.com"
+tagline: "A mobile-first e-commerce platform for the Kenyan market — M-Pesa as the primary payment method, not an afterthought, with semantic search so buyers can describe what they want rather than name it."
+decisions:
+  - choice: "Fastify over Express for the payments API"
+    reasoning: "Schema-driven request validation rejects malformed webhook payloads at the framework level before they reach business logic — for a payments backend, a rejected request is better than a partial state update."
+  - choice: "pgvector over Pinecone or Qdrant for semantic search"
+    reasoning: "The product catalogue is under 500 items. A dedicated vector database would mean another API key, billing account, and failure point for a problem three SQL statements solve. Embeddings live in the same database as product data, which simplifies backups and local development."
+  - choice: "Claude Haiku over Sonnet for the AI Scent Advisor"
+    reasoning: "A chatbot that takes 4 seconds to respond in a shopping context loses the user. Haiku returns first tokens in under 300ms. The domain is narrow enough that a smaller, faster model constrained to a tight system prompt outperforms a larger model given a vague brief."
+  - choice: "Monorepo with independent API deployment over a unified Next.js app"
+    reasoning: "Payment webhook handlers need to be reliable and isolated — a storefront deploy should never affect payment processing. The monorepo gives shared TypeScript contracts without coupling the deployment lifecycle."
 outcomes:
   - metric: "Payment success rate"
     value: "~85%"

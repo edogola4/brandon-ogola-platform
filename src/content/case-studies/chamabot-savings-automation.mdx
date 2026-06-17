@@ -7,6 +7,16 @@ date: "2026-01-20"
 status: "in-development"
 tags: ["Consumer Fintech", "WhatsApp", "M-Pesa", "AI", "Kenya"]
 stack: ["Fastify", "TypeScript", "PostgreSQL", "Prisma", "Redis", "M-Pesa Daraja", "WhatsApp Business API", "Anthropic Claude", "Railway"]
+tagline: "A WhatsApp-native bot that replaces a chama treasurer's Excel spreadsheet — M-Pesa contributions collected automatically, every payment tied to an immutable audit trail."
+decisions:
+  - choice: "Single Fastify service over microservices"
+    reasoning: "Microservices solve scaling and team ownership problems. ChamaBot at MVP has neither. A single service with clear internal module boundaries — message routing, payment handling, NLU dispatch, scheduler — gives separation of concerns without the operational overhead of service-to-service communication, separate deployments, and distributed tracing."
+  - choice: "WhatsApp Business API over OpenWA"
+    reasoning: "OpenWA works by simulating the WhatsApp Web client, which violates WhatsApp's terms of service and is unsuitable for a system handling real money. The official WhatsApp Business API through a BSP is the same integration path used in the Riggs London notification pipeline — proven, compliant, and supported."
+  - choice: "Claude Haiku over larger models for NLU"
+    reasoning: "Intent classification across six intents from short WhatsApp messages doesn't need Sonnet. Haiku costs approximately $0.25 per million input tokens — a 100-token message classified 10,000 times costs $0.25. Sonnet would be 15x more expensive for the same task with no measurable accuracy improvement on a six-intent classifier."
+  - choice: "Append-only contribution_event log over mutable state"
+    reasoning: "Every dispute resolution, every audit query, and every 'what happened to my payment' question gets answered from the database without involving the treasurer. One INSERT per state transition in exchange for complete auditability — the asymmetry is worth it."
 outcomes:
   - metric: "Treasurer reconciliation time"
     value: "~80%"
