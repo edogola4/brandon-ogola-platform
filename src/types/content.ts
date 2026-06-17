@@ -10,6 +10,7 @@ export const CaseStudyFrontmatterSchema = z.object({
   tags: z.array(z.string()),
   stack: z.array(z.string()),
   outcomes: z.array(z.object({ metric: z.string(), value: z.string(), context: z.string() })),
+  liveUrl: z.string().url().optional(),
   readingTime: z.number().optional(),
 })
 

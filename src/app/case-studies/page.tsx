@@ -1,7 +1,7 @@
 import React from 'react'
 import { getAllCaseStudies } from '../../lib/mdx'
 import Link from 'next/link'
-import { Tag, Badge } from '../../components/ui'
+import { Tag, Badge, Button } from '../../components/ui'
 import { generatePageMetadata } from '../../lib/metadata'
 import { formatDate, formatStatus } from '../../lib/content-utils'
 import { CASE_STUDIES_PAGE } from '../../content/data/home'
@@ -54,9 +54,7 @@ export default async function CaseStudiesPage() {
                 {/* Title + badge */}
                 <div className="flex items-start justify-between gap-2">
                   <h2 className="text-sm font-semibold text-neutral-900 leading-snug">
-                    <Link href={`/case-studies/${c.slug}`} className="hover:underline">
-                      {c.title}
-                    </Link>
+                    {c.title}
                   </h2>
                   <Badge variant={variant} className="whitespace-nowrap shrink-0">{label}</Badge>
                 </div>
@@ -87,8 +85,32 @@ export default async function CaseStudiesPage() {
                   {c.tags.slice(0, 3).map((t) => <Tag key={t} label={t} />)}
                 </div>
 
+                {/* Actions */}
+                <div className="flex items-center gap-2 pt-1 border-t border-neutral-100">
+                  <Button asChild variant="ghost" size="sm">
+                    <Link href={`/case-studies/${c.slug}`} className="inline-flex items-center gap-1.5">
+                      Read case study
+                      <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </Link>
+                  </Button>
+                  {c.liveUrl && (
+                    <Button asChild variant="ghost" size="sm">
+                      <a href={c.liveUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5">
+                        View live
+                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path d="M14 3h7v7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M10 14L21 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span className="sr-only">opens in new tab</span>
+                      </a>
+                    </Button>
+                  )}
+                </div>
+
                 {/* Meta */}
-                <div className="flex items-center justify-between text-xs text-neutral-400 pt-1 border-t border-neutral-100">
+                <div className="flex items-center justify-between text-xs text-neutral-400">
                   <span>{c.client}</span>
                   <div className="flex items-center gap-2">
                     {c.readingTime && <span>{c.readingTime} min read</span>}
