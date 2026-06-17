@@ -16,6 +16,11 @@ export const WRITING_PAGE = {
   intro: 'Implementation notes and engineering decisions from production systems — M-Pesa integrations, AI features, database architecture, and cloud infrastructure.',
 }
 
+export const CONTACT_PAGE = {
+  intro: 'Use the form below to outline your project. The more detail you provide, the more useful my response will be.',
+  responseNote: 'I typically respond within 1–2 business days.',
+}
+
 export const AVAILABILITY_CTA = {
   heading: 'Looking for a contract engineer?',
   body: 'I take on select engagements in backend API engineering, full-stack SaaS builds, AI feature integration, and cloud infrastructure. Typical engagements run 4–12 weeks. Based in Nairobi, Kenya — remote-first.',
