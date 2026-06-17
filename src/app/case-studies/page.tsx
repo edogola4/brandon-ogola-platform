@@ -68,7 +68,17 @@ export default async function CaseStudiesPage() {
                 {firstOutcome && (
                   <div className="border border-neutral-100 rounded-md px-3 py-2 bg-neutral-50">
                     <div className="text-xs text-neutral-400 uppercase tracking-wide">{firstOutcome.metric}</div>
-                    <div className="text-lg font-bold text-neutral-900 mt-0.5">{firstOutcome.value}</div>
+                    <div className="flex items-baseline gap-1.5 mt-0.5">
+                      <span className={`text-lg font-bold ${c.status === 'in-development' ? 'text-neutral-500' : 'text-neutral-900'}`}>
+                        {firstOutcome.value}
+                      </span>
+                      {c.status === 'in-development' && (
+                        <span className="text-xs text-neutral-400 font-normal">(target)</span>
+                      )}
+                    </div>
+                    {firstOutcome.context && (
+                      <div className="text-xs text-neutral-400 leading-snug mt-0.5">{firstOutcome.context}</div>
+                    )}
                   </div>
                 )}
 
