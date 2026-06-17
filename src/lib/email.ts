@@ -14,27 +14,40 @@ function getResendClient(): Resend | null {
   return new Resend(key)
 }
 
+function buildSubject(data: ContactFormData): string {
+  if (data.sourceProject && data.intent) {
+    return `New contact: ${data.sourceProject} (${data.intent})`
+  }
+  return `New inquiry from ${data.name} — ${data.projectType}`
+}
+
 export async function sendInquiryNotification(data: ContactFormData): Promise<void> {
   const resend = getResendClient()
   if (!resend) return
 
   try {
+    const lines: string[] = [
+      `Name: ${data.name}`,
+      `Email: ${data.email}`,
+    ]
+    if (data.company) lines.push(`Company: ${data.company}`)
+    if (data.intent) lines.push(`Reason for contact: ${data.intent}`)
+    if (data.sourceProject) lines.push(`Source project: ${data.sourceProject}`)
+    lines.push(
+      `Project type: ${data.projectType}`,
+      `Budget range: ${data.budgetRange ?? '—'}`,
+      `Timeline: ${data.timeline ?? '—'}`,
+      '',
+      'Project brief:',
+      data.brief,
+    )
+
     const { error } = await resend.emails.send({
       from: FROM,
       to: ADMIN_EMAIL,
       replyTo: data.email,
-      subject: `New inquiry from ${data.name} — ${data.projectType}`,
-      text: [
-        `Name: ${data.name}`,
-        `Email: ${data.email}`,
-        `Company: ${data.company ?? '—'}`,
-        `Project type: ${data.projectType}`,
-        `Budget range: ${data.budgetRange ?? '—'}`,
-        `Timeline: ${data.timeline ?? '—'}`,
-        '',
-        'Project brief:',
-        data.brief,
-      ].join('\n'),
+      subject: buildSubject(data),
+      text: lines.join('\n'),
     })
     if (error) logger.error({ err: error }, 'resend notification error')
   } catch (e) {

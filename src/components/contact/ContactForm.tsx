@@ -1,18 +1,35 @@
 'use client'
 
 import React from 'react'
-import { contactSchema, type ContactFormData, PROJECT_TYPES, BUDGET_RANGES, TIMELINES } from '../../lib/schemas/contact'
+import { contactSchema, type ContactFormData, PROJECT_TYPES, BUDGET_RANGES, TIMELINES, type Intent } from '../../lib/schemas/contact'
 import { Button } from '../ui'
 
-export default function ContactForm() {
+/** Map intent param → most relevant projectType default */
+function intentToProjectType(intent: Intent | undefined): ContactFormData['projectType'] {
+  if (intent === 'role') return 'Other'
+  return 'Full-Stack Build'
+}
+
+interface Props {
+  intent?: Intent
+  project?: string
+}
+
+export default function ContactForm({ intent, project }: Props) {
+  const defaultBrief = project
+    ? `Hi Brandon, I came across your ${project} case study and I'd like to talk about...`
+    : ''
+
   const [form, setForm] = React.useState<ContactFormData>({
     name: '',
     email: '',
     company: undefined,
-    projectType: 'Other',
-    brief: '',
+    projectType: intentToProjectType(intent),
+    brief: defaultBrief,
     budgetRange: undefined,
     timeline: undefined,
+    intent: intent ?? undefined,
+    sourceProject: project ?? undefined,
   })
 
   const [errors, setErrors] = React.useState<Partial<Record<keyof ContactFormData, string[]>>>({})
@@ -22,15 +39,6 @@ export default function ContactForm() {
 
   function handleChange<K extends keyof ContactFormData>(key: K, value: ContactFormData[K]) {
     setForm((s) => ({ ...s, [key]: value }))
-    const shape = contactSchema.shape as Record<string, import('zod').ZodTypeAny>
-    try {
-      const fieldSchema = shape[key as string]
-      if (fieldSchema) {
-        // client-side single-field validation intentionally lightweight; main validation runs on submit
-      }
-    } catch {
-      // ignore
-    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -65,11 +73,9 @@ export default function ContactForm() {
         setErrors(errs)
       } else {
         const json = await res.json()
-        if (json?.error) {
-          setRateLimitMsg(String(json.error))
-        }
+        if (json?.error) setRateLimitMsg(String(json.error))
       }
-    } catch (err) {
+    } catch {
       setRateLimitMsg('Something went wrong')
     } finally {
       setSubmitting(false)
@@ -87,6 +93,11 @@ export default function ContactForm() {
 
   return (
     <form className="mt-8 max-w-2xl space-y-6" onSubmit={handleSubmit} noValidate>
+
+      {/* Hidden fields — carry context through to API even if brief is edited */}
+      <input type="hidden" name="sourceProject" value={form.sourceProject ?? ''} />
+      <input type="hidden" name="intent" value={form.intent ?? ''} />
+
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-neutral-700 mb-1">Name</label>
         <input
@@ -128,6 +139,30 @@ export default function ContactForm() {
         {errors.company && errors.company.length > 0 && (
           <div role="alert" className="text-sm text-red-600 mt-1">{errors.company[0]}</div>
         )}
+      </div>
+
+      {/* Reason for contact — pre-selected from intent param, always editable */}
+      <div>
+        <label htmlFor="intent" className="block text-sm font-medium text-neutral-700 mb-1">Reason for contact</label>
+        <div className="relative">
+          <select
+            id="intent"
+            name="intent"
+            value={form.intent ?? ''}
+            onChange={(e) => handleChange('intent', (e.target.value as Intent) || undefined)}
+            className="w-full appearance-none rounded-md border border-neutral-300 bg-white px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+          >
+            <option value="">Select a reason</option>
+            <option value="freelance">Freelance or contract work</option>
+            <option value="role">A role or opportunity</option>
+            <option value="general">Just saying hi / something else</option>
+          </select>
+          <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-neutral-500">
+            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+        </div>
       </div>
 
       <div>
