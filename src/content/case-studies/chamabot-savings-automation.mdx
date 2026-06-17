@@ -281,7 +281,7 @@ The NLU layer classifies the intent and extracts parameters. The Fastify route h
 
 ChamaBot uses two Daraja APIs for two distinct flows:
 
-**STK Push (contributions)** — the same pattern from Riggs London Kenya. Member confirms intent, API initiates STK Push to member's registered phone number, member approves on their handset, callback fires, contribution is confirmed. Idempotency key per contribution, Redis lock for the 30-second STK window, background reconciliation for timeouts.
+**STK Push (contributions)** — the same pattern from Riggs London Kenya. Member confirms intent, API initiates STK Push to member's registered phone number, member approves on their handset, callback fires, contribution is confirmed. Idempotency key per contribution, Redis lock for the 30-second STK window, background reconciliation for timeouts. The complete STK Push implementation — authentication, idempotency, callback handling, and timeout reconciliation — is documented in [Integrating M-Pesa STK Push with a Next.js API Route](/writing/mpesa-nextjs-integration).
 
 **B2C (merry-go-round payouts)** — a different API. The treasurer triggers a payout to the nominated recipient's phone number directly from the chama's M-Pesa business account. No STK Push — the money is deposited directly. The recipient receives an M-Pesa SMS confirmation. B2C requires a separate API credential (`initiatorName`, `securityCredential`) and goes through the Daraja B2C endpoint rather than the STK Push endpoint.
 

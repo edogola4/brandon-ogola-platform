@@ -12,7 +12,7 @@ I have shipped three AI features across two products over the past year. This is
 
 ## The Riggs London Scent Advisor
 
-The first was a fragrance recommendation chatbot for a Kenyan e-commerce platform. The product problem was real: customers would ask "what should I buy for my dad who likes the outdoors" and leave when keyword search returned nothing useful. A constrained Claude chatbot was the right tool.
+The first was a fragrance recommendation chatbot for a Kenyan e-commerce platform. (The full platform is documented in the [Riggs London Kenya case study](/case-studies/riggs-london-kenya).) The product problem was real: customers would ask "what should I buy for my dad who likes the outdoors" and leave when keyword search returned nothing useful. A constrained Claude chatbot was the right tool.
 
 ### Choosing the model
 
@@ -59,7 +59,7 @@ The lesson: rate limiting AI endpoints is not optional. Design it into the archi
 
 ## The pgvector Semantic Search Pipeline
 
-The second AI feature was semantic product search using OpenAI embeddings and pgvector in PostgreSQL. The problem it solved: zero-result searches for intent-based queries. "Something woody and masculine for a gift" should return results. With keyword search, it returns nothing.
+The second AI feature was semantic product search using OpenAI embeddings and pgvector in PostgreSQL. The implementation details — schema design, indexing strategy, and fallback — are covered separately in [Semantic Product Search with pgvector and OpenAI Embeddings](/writing/pgvector-semantic-search). The problem it solved: zero-result searches for intent-based queries. "Something woody and masculine for a gift" should return results. With keyword search, it returns nothing.
 
 ### The case for staying in PostgreSQL
 

@@ -69,6 +69,8 @@ The implementation decisions that made this reliable in production:
 
 **Timeout reconciliation.** STK Push expires after 30 seconds if the user doesn't approve. A background job marks pending payments older than 35 seconds as expired and releases reserved inventory. Without this, inventory stays locked indefinitely on abandoned checkouts.
 
+The full implementation — including authentication, idempotency, callback verification, and timeout handling — is documented in [Integrating M-Pesa STK Push with a Next.js API Route](/writing/mpesa-nextjs-integration).
+
 <ArchitectureDiagram caption="M-Pesa STK Push payment flow">
 <svg viewBox="-10 -10 620 220" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="M-Pesa STK Push flow diagram">
   <defs>
@@ -101,6 +103,8 @@ At product creation, the API generates a 1536-dimension embedding from the conca
 For a user search, the query string is embedded with the same model and a cosine-similarity query runs against the index with a threshold of 0.75. If fewer than 3 results clear the threshold, a PostgreSQL full-text search runs as fallback and results are merged with deduplication. This hybrid approach keeps recall high for intent-based queries while still surfacing exact matches when the user knows what they want.
 
 <MetricCallout metric="Zero-result search reduction" value="~60%" context="Semantic search vs keyword-only for intent-based queries" />
+
+The full schema design, embedding generation, indexing strategy, and fallback implementation is covered in [Semantic Product Search with pgvector and OpenAI Embeddings](/writing/pgvector-semantic-search).
 
 ## AI Scent Advisor
 
