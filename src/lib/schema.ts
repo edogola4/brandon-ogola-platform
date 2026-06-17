@@ -43,6 +43,7 @@ export function articleSchema(article: {
     '@type': 'TechArticle',
     headline: article.title,
     description: article.description,
+    image: `https://brandonogola.dev/og?title=${encodeURIComponent(article.title)}&description=${encodeURIComponent(article.description)}&type=article`,
     datePublished: article.date,
     dateModified: article.date,
     author: {
