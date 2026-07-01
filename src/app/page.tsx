@@ -3,6 +3,7 @@ import Hero from '../components/marketing/Hero'
 import TrustMarquee from '../components/marketing/TrustMarquee'
 import ExpertiseGrid from '../components/marketing/ExpertiseGrid'
 import MetricsStrip from '../components/marketing/MetricsStrip'
+import Testimonials from '../components/marketing/Testimonials'
 import SelectedCaseStudies from '../components/marketing/SelectedCaseStudies'
 import WritingPreview from '../components/marketing/WritingPreview'
 import AvailabilityCTA from '../components/marketing/AvailabilityCTA'
@@ -35,6 +36,8 @@ export default function Page() {
       <ExpertiseGrid />
 
       <MetricsStrip />
+
+      <Testimonials />
 
       <Suspense fallback={
         <section className="max-w-6xl mx-auto px-4 py-12 border-b border-neutral-100">

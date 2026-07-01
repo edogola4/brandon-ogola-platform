@@ -1,0 +1,144 @@
+---
+title: "Kenya Civic Info Bot — AI-Powered Civic Education Chatbot"
+slug: "kenya-civic-info-bot"
+summary: "A RAG-powered conversational AI tool that answers civic and governance questions grounded on Kenya's Constitution 2010, IEBC voter registration information, and county government explainers — available on web and WhatsApp."
+client: "Independent Project — built for civic technology and NGO sector demonstration"
+date: "2026-07-01"
+status: "live"
+tags: ["Civic Tech", "AI", "RAG", "Kenya", "Anthropic", "WhatsApp"]
+stack: ["Next.js 14", "TypeScript", "Anthropic Claude", "OpenAI", "pgvector", "PostgreSQL", "Neon", "WhatsApp Business API", "Tailwind CSS", "Vercel", "Railway"]
+github: "github.com/edogola4"
+tagline: "Civic education at scale — a RAG chatbot grounded on Kenya's Constitution 2010 and IEBC data, available on web and WhatsApp with zero installation required."
+decisions:
+  - choice: "RAG over fine-tuning"
+    reasoning: "Constitutional text doesn't change often, but when it does — or when IEBC deadlines update — a fine-tuned model requires retraining. RAG lets me update the knowledge base by re-indexing a document. It's cheaper to maintain, faster to update, and the cited-source pattern it enables builds user trust in a way a fine-tuned model's implicit knowledge cannot."
+  - choice: "Claude 3.5 Haiku over GPT-4 for generation"
+    reasoning: "In testing on structured civic content, Claude followed the citation instruction more consistently — returning the source document name alongside the answer rather than paraphrasing without attribution. For a civic tool where users need to verify information, that instruction-following reliability on factual grounding tasks mattered more than raw capability."
+  - choice: "WhatsApp over a mobile app"
+    reasoning: "97% of Kenyan smartphone users have WhatsApp. A mobile app requires installation, storage space, and a device capable of running it. WhatsApp works on low-end devices, on 2G, and requires nothing from the user except a message. For a civic education tool targeting broad reach, zero installation friction is not a nice-to-have — it is the distribution strategy."
+outcomes:
+  - metric: "Response time"
+    value: "< 3s"
+    context: "end-to-end from user query to grounded answer"
+  - metric: "Knowledge sources"
+    value: "3"
+    context: "Kenya Constitution 2010, IEBC voter registration guide, county government explainers"
+  - metric: "Channels"
+    value: "Web + WhatsApp"
+    context: "zero installation required on either channel"
+  - metric: "Target reach"
+    value: "47 counties"
+    context: "designed to scale civic education without additional human trainers"
+---
+
+## The problem
+
+Kenya has a fully devolved constitution, 47 county governments, and millions of young people who have never been told their civic rights in plain language. Civic education has historically been locked behind workshops, physical pamphlets, and human trainers — reaching only those who show up.
+
+Questions like "Who is my MCA?", "How do I register to vote?", "What is the role of the county assembly?" go unanswered at scale. Siasa Place and similar organisations work in 13 counties with 8,000+ directly engaged youth — meaningful work, but the constitutional promise of public participation requires reaching millions, not thousands.
+
+The constraint that shaped every decision: the people who most need civic information are the least likely to seek it out through formal channels. The tool had to meet them where they already are, answer in plain language, and be honest about the source of every answer.
+
+## The solution
+
+A RAG-powered conversational AI tool that answers civic and governance questions grounded on Kenya's Constitution 2010, IEBC voter registration information, and county government explainers. Available on web and WhatsApp — meeting users where they already are.
+
+Every answer cites the source document so users can verify the information themselves. In a politically sensitive context, that citation is not a UX detail — it is the trust mechanism.
+
+## Architecture
+
+The system has four layers: a knowledge base, an embedding pipeline, a retrieval layer, and a generation layer.
+
+**Knowledge base.** Three authoritative Kenyan civic documents: Kenya Constitution 2010 (PDF processed and chunked into ~500-token segments), the IEBC voter registration guide, and a county government roles explainer covering the structure and responsibilities of county assemblies, governors, and MCAs.
+
+**Embedding pipeline.** Each chunk is embedded using OpenAI `text-embedding-3-small` and stored in a pgvector table on Neon PostgreSQL. The pipeline runs as a script — re-indexing a document means re-running the script against the updated source, not retraining a model.
+
+**Retrieval.** On a user query, the query string is embedded with the same model and a cosine-similarity search retrieves the top-k most relevant chunks from the vector store. The threshold is tuned to prefer precision over recall — a non-answer is better than a confidently wrong answer on civic content.
+
+**Generation.** Anthropic Claude 3.5 Haiku receives the retrieved chunks as context alongside a system prompt that instructs it to answer only from the provided context, cite the source document in every response, and decline to speculate on questions the context doesn't cover.
+
+<ArchitectureDiagram caption="Kenya Civic Info Bot — RAG pipeline">
+<svg viewBox="-10 -10 640 200" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RAG pipeline: user query flows through embedding, vector search, context retrieval, and Claude generation to a cited answer">
+  <defs>
+    <marker id="arrow-civic" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <rect x="10" y="70" width="90" height="40" rx="4" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+  <text x="55" y="95" textAnchor="middle" fontSize="11" fill="currentColor">User query</text>
+  <rect x="150" y="70" width="100" height="40" rx="4" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+  <text x="200" y="90" textAnchor="middle" fontSize="11" fill="currentColor">Embed query</text>
+  <text x="200" y="104" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.6">text-embedding-3-small</text>
+  <rect x="300" y="70" width="100" height="40" rx="4" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+  <text x="350" y="90" textAnchor="middle" fontSize="11" fill="currentColor">pgvector</text>
+  <text x="350" y="104" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.6">cosine similarity</text>
+  <rect x="450" y="70" width="110" height="40" rx="4" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+  <text x="505" y="90" textAnchor="middle" fontSize="11" fill="currentColor">Claude Haiku</text>
+  <text x="505" y="104" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.6">cited answer</text>
+  <line x1="100" y1="90" x2="146" y2="90" stroke="currentColor" strokeWidth="1.5" markerEnd="url(#arrow-civic)"/>
+  <line x1="250" y1="90" x2="296" y2="90" stroke="currentColor" strokeWidth="1.5" markerEnd="url(#arrow-civic)"/>
+  <line x1="400" y1="90" x2="446" y2="90" stroke="currentColor" strokeWidth="1.5" markerEnd="url(#arrow-civic)"/>
+</svg>
+</ArchitectureDiagram>
+
+**Frontend.** Next.js 14 App Router with a clean chat UI built in Tailwind CSS. The interface is intentionally minimal — a message input, a conversation thread, and a source citation displayed beneath each answer.
+
+**WhatsApp channel.** A WhatsApp Business API webhook receives incoming user messages and routes them through the same RAG pipeline. The response — answer plus source citation — is sent back via the WhatsApp API. The pipeline is channel-agnostic; the web and WhatsApp interfaces share the same retrieval and generation logic.
+
+**Deployment.** Frontend on Vercel. Backend API (embedding, retrieval, generation) on Railway.
+
+## Civic tech considerations
+
+Civic tech engineering has constraints that don't apply to most product categories.
+
+**Data trust.** Every answer must cite its source. In a politically sensitive context, users need to be able to verify what they're told — and the citation is what makes that possible. A confident answer without a source is worse than no answer at all.
+
+**Language.** This is an English-first MVP. Swahili support is planned and affects both the embedding pipeline (Swahili chunks need to be embedded and retrieved correctly) and the prompt design (the generation model needs to respond in the language the user wrote in). This is not a trivial addition — it is a separate engineering workstream.
+
+**Accessibility.** The WhatsApp channel is the accessibility layer. It ensures the tool works on low-bandwidth connections, low-end devices, and for users who would never navigate to a web application. Treating WhatsApp as a secondary channel would have been the wrong call.
+
+**Data freshness.** IEBC registration deadlines change. County data changes. The embedding pipeline needs a regular refresh cadence — not a one-time index. This is an operational concern, not just an engineering one.
+
+## Delivered results
+
+<OutcomeGrid cols={2}>
+  <OutcomeCard
+    metric="Response time"
+    value="< 3s"
+    context="End-to-end from user query to grounded, cited answer"
+  />
+  <OutcomeCard
+    metric="Knowledge sources"
+    value="3"
+    context="Kenya Constitution 2010, IEBC voter registration guide, county government explainers"
+  />
+  <OutcomeCard
+    metric="Channels"
+    value="Web + WhatsApp"
+    context="Zero installation required on either channel"
+  />
+  <OutcomeCard
+    metric="Target reach"
+    value="47 counties"
+    context="Designed to scale civic education without additional human trainers"
+  />
+</OutcomeGrid>
+
+## What I learned
+
+**Citation is a product requirement, not a UX detail.** The decision to surface the source document in every answer changed how I structured the retrieval and generation layers. The prompt, the context format, and the response schema all had to be designed around making citation reliable — not bolted on afterwards.
+
+**RAG is a maintenance commitment, not a one-time build.** The knowledge base is only as good as its last update. IEBC deadlines change, county structures get amended, and a civic tool that gives outdated information is actively harmful. Building the re-indexing pipeline as a first-class concern — not a script to run once — was the right call.
+
+**WhatsApp as a distribution channel changes the product.** Designing for WhatsApp from the start meant keeping responses concise, structuring citations in plain text rather than markdown, and handling the stateless nature of webhook delivery. These constraints made the web interface better too — the discipline of writing for a constrained channel improved the quality of every response.
+
+## What's next
+
+- Swahili language support — affects both the embedding pipeline and prompt design
+- Live IEBC data integration for real-time registration deadlines
+- County-specific ward and MCA data
+- Potential partnership with civic NGOs for deployment at scale
+
+---
+
+For repository and implementation details: [github.com/edogola4](https://github.com/edogola4)

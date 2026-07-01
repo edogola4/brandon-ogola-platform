@@ -7,7 +7,7 @@ import remarkGfm from 'remark-gfm'
 import rehypePrettyCode from 'rehype-pretty-code'
 import rehypeSlug from 'rehype-slug'
 import MDX_COMPONENTS from '../../../lib/mdx-components'
-import { Tag, Badge, Button } from '../../../components/ui'
+import { Tag, Badge, Button, ExternalLink } from '../../../components/ui'
 import { generatePageMetadata } from '../../../lib/metadata'
 import { formatDate, formatStatus } from '../../../lib/content-utils'
 
@@ -27,6 +27,7 @@ const CONTACT_INTENT: Record<string, string> = {
   'chamabot-savings-automation': 'freelance',
   'smartschedule-healthcare':  'freelance',
   'alliance-bioversity-ciat':  'role',
+  'kenya-civic-info-bot':      'freelance',
 }
 
 export async function generateStaticParams() {
@@ -162,6 +163,14 @@ export default async function CaseStudyPage({ params }: Params) {
             <>
               <span aria-hidden="true">·</span>
               <span>{fm.readingTime} min read</span>
+            </>
+          )}
+          {fm.github && (
+            <>
+              <span aria-hidden="true">·</span>
+              <ExternalLink href={`https://${fm.github}`} className="text-sm text-neutral-400 hover:text-neutral-700">
+                GitHub
+              </ExternalLink>
             </>
           )}
         </div>
